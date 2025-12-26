@@ -76,7 +76,7 @@ sequenceDiagram
     DB-->>AmenityRepo: OK
     Facade-->>API: place created
     API-->>Client: 201 Created
-```
+
 2.3 Review Submission — POST /places/{id}/reviews
 Description
 
@@ -112,5 +112,3 @@ sequenceDiagram
     DB-->>ReviewRepo: OK
     Facade-->>API: review created
     API-->>Client: 201 Created
-```
-
