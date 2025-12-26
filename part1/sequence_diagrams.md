@@ -1,8 +1,8 @@
 # TASK 2 — Sequence Diagrams for API Calls
 
-This section presents sequence diagrams illustrating the interaction flow between the **Presentation Layer**, **Business Logic Layer (HBnBFacade)**, and **Persistence Layer** for the main API use cases of the **HBnB Evolution** application.
+This section presents sequence diagrams illustrating the interaction flow between the Presentation Layer, Business Logic Layer (HBnBFacade), and Persistence Layer for the main API use cases of the HBnB Evolution application.
 
-The goal of these diagrams is to clearly demonstrate how API requests are processed step by step across the system layers, following the layered architecture defined in **TASK 1** and the domain model defined in **TASK 0**.
+The goal of these diagrams is to clearly demonstrate how API requests are processed step by step across the system layers, following the layered architecture defined in TASK 1 and the domain model defined in TASK 0.
 
 ---
 
@@ -155,6 +155,3 @@ The Presentation Layer handles HTTP requests and responses.
 The Business Logic Layer (HBnBFacade) applies domain rules and coordinates operations.
 
 The Persistence Layer manages data storage and retrieval.
-
-yaml
-Copy code
