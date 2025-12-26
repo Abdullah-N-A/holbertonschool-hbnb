@@ -38,7 +38,43 @@ sequenceDiagram
     DB-->>UserRepo: OK
     Facade-->>API: user created
     API-->>Client: 201 Created
+```
+2.2 Place Creation — POST /places
+Description
 
+This API call allows a registered user to create a new place listing and optionally associate amenities with it.
 
+Flow Summary
+
+The client submits place data to the API.
+
+The API forwards the request to the HBnBFacade.
+
+The facade validates the owner and place attributes.
+
+The place is stored and amenities are linked.
+
+The created place is returned to the client.
+
+Sequence Diagram
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as HBnBFacade
+    participant PlaceRepo as PlaceRepository
+    participant AmenityRepo as AmenityRepository
+    participant DB as Database
+
+    Client->>API: POST /places
+    API->>Facade: createPlace(placeData)
+    Facade->>Facade: validateOwner()
+    Facade->>PlaceRepo: save(place)
+    PlaceRepo->>DB: INSERT place
+    DB-->>PlaceRepo: OK
+    Facade->>AmenityRepo: linkAmenities(place, amenities)
+    AmenityRepo->>DB: INSERT relations
+    DB-->>AmenityRepo: OK
+    Facade-->>API: place created
+    API-->>Client: 201 Created
 
 
