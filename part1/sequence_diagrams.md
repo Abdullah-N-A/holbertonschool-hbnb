@@ -39,18 +39,3 @@ sequenceDiagram
     Facade-->>API: user created
     API-->>Client: 201 Created  
 
-
-###2.2 Place Creation — POST /places
-Description
-This API call allows a registered user to create a new place listing and optionally associate amenities with it.
-
-Flow Summary
-The client submits place data to the API.
-
-The API forwards the request to the HBnBFacade.
-
-The facade validates the owner and place attributes.
-
-The place is stored and amenities are linked.
-
-The created place is returned to the client.
