@@ -76,5 +76,41 @@ sequenceDiagram
     DB-->>AmenityRepo: OK
     Facade-->>API: place created
     API-->>Client: 201 Created
+```
+2.3 Review Submission — POST /places/{id}/reviews
+Description
 
+This API call handles the submission of a review for a specific place by a registered user.
+
+Flow Summary
+
+The client submits a review request.
+
+The API forwards the request to the HBnBFacade.
+
+The facade validates the user, the place, and the rating.
+
+The review is persisted.
+
+A success response is returned to the client.
+
+Sequence Diagram
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as HBnBFacade
+    participant ReviewRepo as ReviewRepository
+    participant DB as Database
+
+    Client->>API: POST /places/{id}/reviews
+    API->>Facade: createReview(reviewData)
+    Facade->>Facade: validateUser()
+    Facade->>Facade: validatePlace()
+    Facade->>Facade: validateRating()
+    Facade->>ReviewRepo: save(review)
+    ReviewRepo->>DB: INSERT review
+    DB-->>ReviewRepo: OK
+    Facade-->>API: review created
+    API-->>Client: 201 Created
+```
 
