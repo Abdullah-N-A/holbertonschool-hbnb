@@ -37,7 +37,7 @@ sequenceDiagram
     UserRepo->>DB: INSERT user
     DB-->>UserRepo: OK
     Facade-->>API: user created
-    API-->>Client: 201 Created
+    API-->>Client: 201 Created  
 ---
 
 2.2 Place Creation — POST /places
