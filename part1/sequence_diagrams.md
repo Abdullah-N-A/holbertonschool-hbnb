@@ -72,3 +72,64 @@ sequenceDiagram
     DB-->>AmenityRepo: OK
     Facade-->>API: place created
     API-->>Client: 201 Created
+```
+## 2.3 Review Submission — POST /places/{id}/reviews
+
+### Description
+This API call handles the submission of a review for a specific place by a registered user.
+
+### Flow Summary
+- The client submits a review request.
+- The API forwards the request to the HBnBFacade.
+- The facade validates the user, the place, and the rating.
+- The review is persisted.
+- A success response is returned to the client.
+
+### Sequence Diagram
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as HBnBFacade
+    participant ReviewRepo as ReviewRepository
+    participant DB as Database
+
+    Client->>API: POST /places/{id}/reviews
+    API->>Facade: createReview(reviewData)
+    Facade->>Facade: validateUser()
+    Facade->>Facade: validatePlace()
+    Facade->>Facade: validateRating()
+    Facade->>ReviewRepo: save(review)
+    ReviewRepo->>DB: INSERT review
+    DB-->>ReviewRepo: OK
+    Facade-->>API: review created
+    API-->>Client: 201 Created
+```
+## 2.4 Fetching a List of Places — GET /places
+
+### Description
+This API call retrieves a list of places based on optional filtering criteria such as price, location, or amenities.
+
+### Flow Summary
+- The client sends a request with query parameters.
+- The API parses and validates the filters.
+- The HBnBFacade queries the PlaceRepository.
+- Matching places are returned to the client.
+
+### Sequence Diagram
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Presentation Layer
+    participant Facade as HBnBFacade
+    participant PlaceRepo as PlaceRepository
+    participant DB as Database
+
+    Client->>API: GET /places?filters
+    API->>Facade: getPlaces(filters)
+    Facade->>PlaceRepo: query(filters)
+    PlaceRepo->>DB: SELECT places
+    DB-->>PlaceRepo: results
+    PlaceRepo-->>Facade: places list
+    Facade-->>API: places
+    API-->>Client: 200 OK
