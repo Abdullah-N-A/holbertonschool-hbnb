@@ -133,3 +133,10 @@ sequenceDiagram
     PlaceRepo-->>Facade: places list
     Facade-->>API: places
     API-->>Client: 200 OK
+```
+| API Call                  | Purpose                   |
+| ------------------------- | ------------------------- |
+| POST /users               | Register a new user       |
+| POST /places              | Create a new place        |
+| POST /places/{id}/reviews | Submit a review           |
+| GET /places               | Retrieve a list of places |
