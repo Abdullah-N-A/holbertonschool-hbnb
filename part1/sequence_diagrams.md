@@ -1,3 +1,5 @@
+Sequence Diagrams for API Calls
+
 This section presents sequence diagrams illustrating the interaction flow between the Presentation Layer, Business Logic Layer (Facade), and Persistence Layer for the main API use cases of the HBnB Evolution application.
 
 The objective of these diagrams is to visualize how API requests are handled step-by-step across system layers, ensuring a clear separation of concerns and alignment with the layered architecture defined in TASK 1 and the domain model defined in TASK 0.
