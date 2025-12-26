@@ -38,9 +38,9 @@ sequenceDiagram
     DB-->>UserRepo: OK
     Facade-->>API: user created
     API-->>Client: 201 Created  
----
 
-2.2 Place Creation — POST /places
+
+###2.2 Place Creation — POST /places
 Description
 This API call allows a registered user to create a new place listing and optionally associate amenities with it.
 
