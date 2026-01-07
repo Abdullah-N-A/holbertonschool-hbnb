@@ -1,11 +1,21 @@
+from app.business.models.facade import HBnBFacade
 from flask_restx import Namespace, Resource
+facade = HBnBFacade()
 
 api_v1 = Namespace("health", description="Health check")
-
-@api_v1.route("/")
-class Health(Resource):
+@users_ns.route("/")
+class UsersList(Resource):
     def get(self):
-        return {"status": "HBnB API is running"}, 200
+        users = facade.get_all()
+
+        result = []
+        for user in users:
+            user_dict = user.to_dict()
+            user_dict.pop("password", None)
+            result.append(user_dict)
+
+        return result, 200
+
 
 users_ns = Namespace(
     "users",
