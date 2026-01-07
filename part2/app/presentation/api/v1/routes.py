@@ -22,9 +22,5 @@ users_ns = Namespace(
     description="User operations",
     path="/api/v1/users"
 )
-@users_ns.route("/")
-class UsersList(Resource):
-    def get(self):
-        return {"message": "Users list endpoint"}, 200
 api.add_namespace(api_v1)
 api.add_namespace(users_ns)
