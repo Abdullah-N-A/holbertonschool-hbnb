@@ -9,3 +9,4 @@ class Amenity(BaseModel):
             raise ValueError("Amenity name is required")
 
         self.name = name
+        self.description = description

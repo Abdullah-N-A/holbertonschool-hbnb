@@ -11,8 +11,12 @@ def create_app():
         description="HBnB Application API"
     )
 
-    from app.presentation.api.v1.routes import api_v1
-    # غير هذا السطر ليكون endpoint النهائي /api/v1/health/
-    api.add_namespace(api_v1, path="/api/v1/health")
+    # Users namespace
+    from app.api.v1.users import users_ns
+    api.add_namespace(users_ns, path="/api/v1/users")
+
+    # Amenities namespace
+    from app.api.v1.amenities import api as amenities_ns
+    api.add_namespace(amenities_ns, path="/api/v1/amenities")
 
     return app
