@@ -76,12 +76,9 @@ part2/
 │ ├── init.py
 │ └── repository.py
 │
-│──main.py
+├── main.py
 ├── requirements.txt
 └── README.md
-
----
-
 ## 🚀 Features Implemented
 
 ### Users
@@ -151,3 +148,4 @@ pip install -r requirements.txt
 
 Run the application
 python3 -m app
+
