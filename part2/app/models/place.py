@@ -4,13 +4,18 @@ from models.amenity import Amenity
 
 
 class Place(BaseModel):
-    def __init__(self, name, description, city, price_per_night, owner: User):
+    def __init__(self, name, description, city, price_per_night,latitude, longitude, owner: User):
         super().__init__()
 
         if not name:
             raise ValueError("Place name is required")
         if price_per_night < 0:
             raise ValueError("Price must be positive")
+        if not (-90 <= latitude <= 90):
+            raise ValueError("Invalid latitude")
+
+        if not (-180 <= longitude <= 180):
+            raise ValueError("Invalid longitude")    
 
         self.name = name
         self.description = description
@@ -19,6 +24,9 @@ class Place(BaseModel):
         self.owner = owner
         self.reviews = []
         self.amenities = []
+        self.latitude = latitude
+        self.longitude = longitude
+
 
         owner.places.append(self)
 

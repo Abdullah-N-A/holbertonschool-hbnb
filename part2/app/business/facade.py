@@ -18,3 +18,6 @@ class HBnBFacade:
 
     def delete(self, obj_id):
         return self.repository.delete(obj_id)
+    
+    def get_places(self):
+        return [obj for obj in self.get_all() if obj.__class__.__name__ == "Place"]
