@@ -55,8 +55,8 @@ class PlaceList(Resource):
 
         
         owner = facade.get(data['owner_id'])
-        if not owner:
-            return {'error': 'Owner not found'}, 400
+        if not owner or not isinstance(owner, User):
+                return {'error': 'Owner not found'}, 400
 
         
         new_place = Place(
