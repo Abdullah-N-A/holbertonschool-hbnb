@@ -1,6 +1,6 @@
 from .base_model import BaseModel
-from models.user import User
-from models.place import Place
+from .user import User
+from .place import Place
 
 
 class Review(BaseModel):

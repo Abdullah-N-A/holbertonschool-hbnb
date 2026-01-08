@@ -1,6 +1,6 @@
 from .base_model import BaseModel
-from models.user import User
-from models.amenity import Amenity
+from .user import User
+from .amenity import Amenity
 
 
 class Place(BaseModel):
