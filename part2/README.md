@@ -46,6 +46,8 @@ Persistence Layer (In-memory storage)
 
 ## 📁 Project Structure
 
+
+
 part2/
 │
 ├── app/
@@ -79,6 +81,12 @@ part2/
 ├── main.py
 ├── requirements.txt
 └── README.md
+
+
+
+
+
+
 ## 🚀 Features Implemented
 
 ### Users
@@ -148,4 +156,5 @@ pip install -r requirements.txt
 
 Run the application
 python3 -m app
+
 
