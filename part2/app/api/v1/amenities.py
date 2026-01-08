@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import HBnBFacade
+from app.business.facade import HBnBFacade
 from app.models.amenity import Amenity
 
 facade = HBnBFacade()
