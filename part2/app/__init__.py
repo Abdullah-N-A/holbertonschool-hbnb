@@ -19,4 +19,8 @@ def create_app():
     from app.api.v1.amenities import api as amenities_ns
     api.add_namespace(amenities_ns, path="/api/v1/amenities")
 
+    # Places namespace (الجديد)
+    from app.api.v1.places import api as places_ns
+    api.add_namespace(places_ns, path="/api/v1/places")
+
     return app
