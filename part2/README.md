@@ -51,7 +51,8 @@ Persistence Layer (In-memory storage)
 part2
 
 
-├── app
+├── 
+app
 │   ├── __init__.py
 │   ├── api
 │   │   └── v1
@@ -153,6 +154,7 @@ pip install -r requirements.txt
 
 Run the application
 python3 -m app
+
 
 
 
