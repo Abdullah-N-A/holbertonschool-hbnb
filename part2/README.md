@@ -47,30 +47,28 @@ Persistence Layer (In-memory storage)
 ## 📁 Project Structure
 
 
-# Project Structure
-
-part2/
-├── app/
+part2
+├── app
 │   ├── __init__.py
-│   ├── api/
-│   │   └── v1/
+│   ├── api
+│   │   └── v1
 │   │       ├── __init__.py
 │   │       ├── users.py
 │   │       ├── places.py
 │   │       ├── amenities.py
 │   │       ├── reviews.py
 │   │       └── health.py
-│   ├── business/
+│   ├── business
 │   │   ├── __init__.py
 │   │   └── facade.py
-│   ├── models/
+│   ├── models
 │   │   ├── __init__.py
 │   │   ├── base_model.py
 │   │   ├── user.py
 │   │   ├── place.py
 │   │   ├── amenity.py
 │   │   └── review.py
-│   └── persistence/
+│   └── persistence
 │       ├── __init__.py
 │       └── repository.py
 ├── main.py
