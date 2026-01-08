@@ -1,6 +1,8 @@
 from flask_restx import Namespace, Resource, fields
 from app.business.facade import HBnBFacade
 from app.models.place import Place
+from app.models.review import Review
+from app.models.user import User
 
 facade = HBnBFacade()
 
@@ -139,3 +141,23 @@ class PlaceResource(Resource):
             'created_at': updated_place.created_at.isoformat(),
             'updated_at': updated_place.updated_at.isoformat()
         }, 200
+@api.route('/<string:place_id>/reviews')
+class PlaceReviews(Resource):
+    @api.response(200, 'List of reviews for the place')
+    @api.response(404, 'Place not found')
+    def get(self, place_id):
+        place = facade.get(place_id)
+        if not place or not isinstance(place, Place):
+            return {'error': 'Place not found'}, 404
+
+        return [
+            {
+                'id': r.id,
+                'text': r.text,
+                'rating': r.rating,
+                'user_id': r.user.id,
+                'created_at': r.created_at.isoformat(),
+                'updated_at': r.updated_at.isoformat()
+            }
+            for r in place.reviews
+        ], 200

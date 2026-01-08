@@ -26,7 +26,7 @@ class Place(BaseModel):
         self.amenities = []
         self.latitude = latitude
         self.longitude = longitude
-
+        self.reviews = []
 
         owner.places.append(self)
 
