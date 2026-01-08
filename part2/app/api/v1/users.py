@@ -1,11 +1,15 @@
 from flask import request
 from flask_restx import Namespace, Resource
-from app.business.facade import facade
+from app.business.facade import HBnBFacade
 from app.models.user import User
+
+facade = HBnBFacade()
+
 
 users_ns = Namespace(
     "users",
-    description="User operations"
+    description="User operations",
+    path="/api/v1/users"
 )
 
 
