@@ -47,40 +47,36 @@ Persistence Layer (In-memory storage)
 ## 📁 Project Structure
 
 
+# Project Structure
 
 part2/
-│
 ├── app/
-│ ├── init.py
-│ │
-│ ├── api/
-│ │ └── v1/
-│ │ ├── init.py
-│ │ ├── users.py
-│ │ ├── places.py
-│ │ ├── amenities.py
-│ │ ├── reviews.py
-│ │ └── health.py
-│ │
-│ ├── business/
-│ │ ├── init.py
-│ │ └── facade.py
-│ │
-│ ├── models/
-│ │ ├── init.py
-│ │ ├── base_model.py
-│ │ ├── user.py
-│ │ ├── place.py
-│ │ ├── amenity.py
-│ │ └── review.py
-│ │
-│ └── persistence/
-│ ├── init.py
-│ └── repository.py
-│
+│   ├── __init__.py
+│   ├── api/
+│   │   └── v1/
+│   │       ├── __init__.py
+│   │       ├── users.py
+│   │       ├── places.py
+│   │       ├── amenities.py
+│   │       ├── reviews.py
+│   │       └── health.py
+│   ├── business/
+│   │   ├── __init__.py
+│   │   └── facade.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── base_model.py
+│   │   ├── user.py
+│   │   ├── place.py
+│   │   ├── amenity.py
+│   │   └── review.py
+│   └── persistence/
+│       ├── __init__.py
+│       └── repository.py
 ├── main.py
 ├── requirements.txt
 └── README.md
+
 
 
 
@@ -156,5 +152,6 @@ pip install -r requirements.txt
 
 Run the application
 python3 -m app
+
 
 
