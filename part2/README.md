@@ -120,7 +120,7 @@ part2/
 
 ## 🧪 Testing
 
-
+```
 Tested Endpoints
 Endpoint	Input	Expected	Actual
 POST /users	Valid	201	201
@@ -128,7 +128,7 @@ POST /users	Invalid email	400	400
 POST /places	Invalid lat	400	400
 POST /reviews	Rating >5	400	400
 GET /places/{id}	Not found	404	404
-
+```
 ✔ All validation rules enforced
 ✔ All endpoints respect status codes
 ✔ Swagger matches implementation
@@ -159,6 +159,7 @@ pip install -r requirements.txt
 
 Run the application
 python3 -m app
+
 
 
 
