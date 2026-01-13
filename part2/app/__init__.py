@@ -8,7 +8,8 @@ def create_app():
         app,
         title="HBnB API",
         version="1.0",
-        description="HBnB Application API"
+        description="HBnB Application API",
+        doc="/api/v1/"
     )
 
     # Users namespace
