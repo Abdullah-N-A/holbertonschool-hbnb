@@ -1,0 +1,89 @@
+from flask_restx import Namespace, Resource, fields
+from app.business.facade import HBnBFacade
+from app.models.amenity import Amenity
+
+facade = HBnBFacade()
+
+api = Namespace('amenities', description='Amenity operations')
+
+# Define the amenity model for input validation
+amenity_model = api.model('Amenity', {
+    'name': fields.String(required=True, description='Name of the amenity'),
+    'description': fields.String(required=False, description='Description of the amenity')
+})
+
+
+@api.route('/')
+class AmenityList(Resource):
+    @api.response(200, 'List of amenities retrieved successfully')
+    def get(self):
+        """Retrieve all amenities"""
+        amenities = [a for a in facade.get_all() if isinstance(a, Amenity)]
+        return [{
+            'id': a.id,
+            'name': a.name,
+            'description': getattr(a, 'description', None),
+            'created_at': a.created_at.isoformat(),
+            'updated_at': a.updated_at.isoformat()
+        } for a in amenities], 200
+
+    @api.expect(amenity_model, validate=True)
+    @api.response(201, 'Amenity successfully created')
+    @api.response(400, 'Invalid input data')
+    def post(self):
+        """Create a new amenity"""
+        data = api.payload or {}
+        name = data.get('name')
+        if not name:
+            return {'error': 'Amenity name is required'}, 400
+
+        new_amenity = Amenity(name=name, description=data.get('description'))
+        created = facade.create(new_amenity)
+
+        return {
+            'id': created.id,
+            'name': created.name,
+            'description': getattr(created, 'description', None),
+            'created_at': created.created_at.isoformat(),
+            'updated_at': created.updated_at.isoformat()
+        }, 201
+
+
+@api.route('/<string:amenity_id>')
+class AmenityResource(Resource):
+    @api.response(200, 'Amenity details retrieved successfully')
+    @api.response(404, 'Amenity not found')
+    def get(self, amenity_id):
+        """Get amenity by ID"""
+        a = facade.get(amenity_id)
+        if not a or not isinstance(a, Amenity):
+            return {'error': 'Amenity not found'}, 404
+
+        return {
+            'id': a.id,
+            'name': a.name,
+            'description': getattr(a, 'description', None),
+            'created_at': a.created_at.isoformat(),
+            'updated_at': a.updated_at.isoformat()
+        }, 200
+
+    @api.expect(amenity_model)
+    @api.response(200, 'Amenity updated successfully')
+    @api.response(404, 'Amenity not found')
+    @api.response(400, 'Invalid input data')
+    def put(self, amenity_id):
+        """Update amenity"""
+        a = facade.get(amenity_id)
+        if not a or not isinstance(a, Amenity):
+            return {'error': 'Amenity not found'}, 404
+
+        data = api.payload or {}
+        updated = facade.update(amenity_id, data)
+
+        return {
+            'id': updated.id,
+            'name': updated.name,
+            'description': getattr(updated, 'description', None),
+            'created_at': updated.created_at.isoformat(),
+            'updated_at': updated.updated_at.isoformat()
+        }, 200
