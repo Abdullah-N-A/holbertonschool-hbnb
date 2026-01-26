@@ -1,13 +1,26 @@
-if 'password' not in data:
-    abort(400, description="Missing password")
+from flask import request, jsonify, abort
+from app.models import User
+from app import bcrypt
+from flask_jwt_extended import create_access_token
 
-user = User(
-    email=data['email'],
-    first_name=data.get('first_name'),
-    last_name=data.get('last_name')
-)
+@app.route('/api/v1/login', methods=['POST'])
+def login():
+    # Get JSON data from the request
+    data = request.get_json()
 
-user.set_password(data['password'])
-user.save()
+    # Validate that both email and password are provided
+    if not data or 'email' not in data or 'password' not in data:
+        abort(400, description="Missing email or password")
 
-return jsonify(user.to_dict()), 201
+    # Query the user by email
+    user = User.query.filter_by(email=data['email']).first()
+
+    # Check if user exists and password is correct
+    if user is None or not user.check_password(data['password']):
+        abort(401, description="Invalid credentials")
+
+    # Create JWT access token with user's ID as identity
+    access_token = create_access_token(identity=user.id)
+
+    # Return the token in JSON response
+    return jsonify(access_token=access_token), 200
