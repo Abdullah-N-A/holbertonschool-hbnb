@@ -20,3 +20,15 @@ class User(BaseModel):
 
     def check_password(self, plain_password: str) -> bool:
         return bcrypt.check_password_hash(self.password, plain_password)
+    
+    def to_dict(self):
+        """Return safe user data (NO PASSWORD)"""
+        return {
+            "id": self.id,
+            "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "is_admin": self.is_admin,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+        }
