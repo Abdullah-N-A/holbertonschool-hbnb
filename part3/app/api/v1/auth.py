@@ -1,7 +1,8 @@
 # app/api/v1/auth.py
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import create_access_token
 from app.models.user import User
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+
 
 api = Namespace("auth", description="Authentication operations")
 
