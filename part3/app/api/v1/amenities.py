@@ -1,3 +1,4 @@
+# app/api/v1/amenities.py
 from flask_restx import Namespace, Resource, fields
 from app.business.facade import HBnBFacade
 from app.models.amenity import Amenity
@@ -6,7 +7,6 @@ facade = HBnBFacade()
 
 api = Namespace('amenities', description='Amenity operations')
 
-# Define the amenity model for input validation
 amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity'),
     'description': fields.String(required=False, description='Description of the amenity')
@@ -19,12 +19,13 @@ class AmenityList(Resource):
     def get(self):
         """Retrieve all amenities"""
         amenities = [a for a in facade.get_all() if isinstance(a, Amenity)]
+
         return [{
             'id': a.id,
             'name': a.name,
             'description': getattr(a, 'description', None),
-            'created_at': a.created_at.isoformat(),
-            'updated_at': a.updated_at.isoformat()
+            'created_at': a.created_at.isoformat() if a.created_at else None,
+            'updated_at': a.updated_at.isoformat() if a.updated_at else None
         } for a in amenities], 200
 
     @api.expect(amenity_model, validate=True)
@@ -33,19 +34,26 @@ class AmenityList(Resource):
     def post(self):
         """Create a new amenity"""
         data = api.payload or {}
+
         name = data.get('name')
         if not name:
             return {'error': 'Amenity name is required'}, 400
 
-        new_amenity = Amenity(name=name, description=data.get('description'))
+        # ✅ constructor ما يستقبل description
+        new_amenity = Amenity(name=name)
+
+        # نضيف الوصف يدويًا بعد الإنشاء
+        if 'description' in data:
+            new_amenity.description = data['description']
+
         created = facade.create(new_amenity)
 
         return {
             'id': created.id,
             'name': created.name,
             'description': getattr(created, 'description', None),
-            'created_at': created.created_at.isoformat(),
-            'updated_at': created.updated_at.isoformat()
+            'created_at': created.created_at.isoformat() if created.created_at else None,
+            'updated_at': created.updated_at.isoformat() if created.updated_at else None
         }, 201
 
 
@@ -56,6 +64,7 @@ class AmenityResource(Resource):
     def get(self, amenity_id):
         """Get amenity by ID"""
         a = facade.get(amenity_id)
+
         if not a or not isinstance(a, Amenity):
             return {'error': 'Amenity not found'}, 404
 
@@ -63,8 +72,8 @@ class AmenityResource(Resource):
             'id': a.id,
             'name': a.name,
             'description': getattr(a, 'description', None),
-            'created_at': a.created_at.isoformat(),
-            'updated_at': a.updated_at.isoformat()
+            'created_at': a.created_at.isoformat() if a.created_at else None,
+            'updated_at': a.updated_at.isoformat() if a.updated_at else None
         }, 200
 
     @api.expect(amenity_model)
@@ -74,6 +83,7 @@ class AmenityResource(Resource):
     def put(self, amenity_id):
         """Update amenity"""
         a = facade.get(amenity_id)
+
         if not a or not isinstance(a, Amenity):
             return {'error': 'Amenity not found'}, 404
 
@@ -84,6 +94,6 @@ class AmenityResource(Resource):
             'id': updated.id,
             'name': updated.name,
             'description': getattr(updated, 'description', None),
-            'created_at': updated.created_at.isoformat(),
-            'updated_at': updated.updated_at.isoformat()
+            'created_at': updated.created_at.isoformat() if updated.created_at else None,
+            'updated_at': updated.updated_at.isoformat() if updated.updated_at else None
         }, 200
