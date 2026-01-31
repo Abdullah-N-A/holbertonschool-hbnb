@@ -1,74 +1,72 @@
 # app/api/v1/users.py
-# app/api/v1/users.py
 from flask import request
 from flask_restx import Namespace, Resource
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
-
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from app.business.facade import HBnBFacade
 from app.models.user import User
 
 facade = HBnBFacade()
-
 api = Namespace("users", description="User operations")
 
 
 @api.route("/")
 class UsersList(Resource):
+    @jwt_required()
     def get(self):
-        """Get all users (public for now)"""
-        users = [u for u in facade.get_all() if isinstance(u, User)]
+        claims = get_jwt()
+        if not claims.get("is_admin"):
+            return {"error": "Forbidden"}, 403
 
+        users = User.query.all()
         return [
             {
                 "id": u.id,
                 "email": u.email,
                 "first_name": u.first_name,
                 "last_name": u.last_name,
-                "is_admin": getattr(u, "is_admin", False),
+                "is_admin": u.is_admin,
             }
             for u in users
         ], 200
 
     def post(self):
-        """Create a new user (public registration for now)"""
         data = request.get_json() or {}
 
-        if not data.get("email"):
-            return {"error": "Email is required"}, 400
-        if not data.get("password"):
-            return {"error": "Password is required"}, 400
+        if not data.get("email") or not data.get("password"):
+            return {"error": "Email and password are required"}, 400
 
-        # منع تكرار الإيميل
-        existing = User.query.filter_by(email=data["email"]).first()
-        if existing:
-            return {"error": "Email already registered"}, 400
+        if User.query.filter_by(email=data["email"]).first():
+            return {"error": "Email already exists"}, 400
 
         user = User(
             email=data["email"],
             first_name=data.get("first_name", ""),
             last_name=data.get("last_name", ""),
         )
-        # ✅ hash password
         user.set_password(data["password"])
 
-        created_user = facade.create(user)
+        created = facade.create(user)
 
         return {
-            "id": created_user.id,
-            "email": created_user.email,
-            "first_name": created_user.first_name,
-            "last_name": created_user.last_name,
-            "is_admin": getattr(created_user, "is_admin", False),
+            "id": created.id,
+            "email": created.email,
+            "first_name": created.first_name,
+            "last_name": created.last_name,
         }, 201
 
 
 @api.route("/<string:user_id>")
 class UserDetail(Resource):
+    @jwt_required()
     def get(self, user_id):
-        """Get user by ID"""
-        user = facade.get(user_id)
+        claims = get_jwt()
+        current_user_id = get_jwt_identity()
 
-        if not user or not isinstance(user, User):
+        if not claims.get("is_admin") and current_user_id != user_id:
+            return {"error": "Forbidden"}, 403
+
+        user = User.query.get(user_id)
+        if not user:
             return {"error": "User not found"}, 404
 
         return {
@@ -76,41 +74,41 @@ class UserDetail(Resource):
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            "is_admin": getattr(user, "is_admin", False),
+            "is_admin": user.is_admin,
         }, 200
 
     @jwt_required()
     def put(self, user_id):
-        """
-        Update user (authenticated):
-        - user can update ONLY his own first_name/last_name
-        - cannot modify email/password here
-        - admin rules will come later in admin task
-        """
-        current_user_id = str(get_jwt_identity())
         claims = get_jwt()
-        is_admin = claims.get("is_admin", False)
+        current_user_id = get_jwt_identity()
 
-        # user يسمح له يعدل نفسه فقط (إلا لو admin)
-        if not is_admin and current_user_id != str(user_id):
-            return {"error": "Unauthorized action"}, 403
+        if not claims.get("is_admin") and current_user_id != user_id:
+            return {"error": "Forbidden"}, 403
+
+        user = User.query.get(user_id)
+        if not user:
+            return {"error": "User not found"}, 404
 
         data = request.get_json() or {}
 
-        # ممنوع تعديل email/password هنا
-        if "email" in data or "password" in data:
-            return {"error": "You cannot modify email or password here"}, 400
+        allowed = {"first_name", "last_name"}
+        if claims.get("is_admin"):
+            allowed.add("is_admin")
 
-        user = facade.get(user_id)
-        if not user or not isinstance(user, User):
-            return {"error": "User not found"}, 404
+        for k, v in data.items():
+            if k in allowed:
+                setattr(user, k, v)
 
-        updated_user = facade.update(user_id, data)
+        if "password" in data and data["password"]:
+            if claims.get("is_admin") or current_user_id == user_id:
+                user.set_password(data["password"])
+
+        facade.create(user)  # commit (create uses session.add+commit)
 
         return {
-            "id": updated_user.id,
-            "email": updated_user.email,
-            "first_name": updated_user.first_name,
-            "last_name": updated_user.last_name,
-            "is_admin": getattr(updated_user, "is_admin", False),
+            "id": user.id,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "is_admin": user.is_admin,
         }, 200

@@ -26,3 +26,19 @@ class Login(Resource):
             additional_claims={"is_admin": user.is_admin}
         )
         return {"access_token": token}, 200
+@api.route("/me")
+class Me(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return {"error": "User not found"}, 404
+
+        return {
+            "id": user.id,
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "is_admin": user.is_admin,
+        }, 200

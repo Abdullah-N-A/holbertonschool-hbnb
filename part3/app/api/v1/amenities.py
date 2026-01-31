@@ -2,6 +2,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.business.facade import HBnBFacade
 from app.models.amenity import Amenity
+from flask_jwt_extended import jwt_required, get_jwt
 
 facade = HBnBFacade()
 
