@@ -1,7 +1,7 @@
 # HBnB — Database ER Diagram (Task 10)
 
 
----
+
 
 ## ER Diagram (Mermaid)
 
