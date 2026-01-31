@@ -49,7 +49,7 @@ erDiagram
     PLACE ||--o{  REVIEW         : has
     PLACE ||--o{  PLACE_AMENITY  : links
     AMENITY ||--o{ PLACE_AMENITY : links
-
+```
 Relationships
 One-to-Many
 
@@ -75,4 +75,3 @@ Symbol	Meaning
 `o	`
 }o	Zero or more
 `}	`
-```
