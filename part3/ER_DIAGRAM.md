@@ -1,20 +1,27 @@
+# HBnB — Database ER Diagram (Task 10)
+
+> Paste this file as `README.md` (or `TASK_10_README.md`) in your repo.
+
+---
+
+## ER Diagram (Mermaid)
+
 ```mermaid
 erDiagram
-
     USER {
         CHAR(36) id PK
-        VARCHAR first_name
-        VARCHAR last_name
-        VARCHAR email
-        VARCHAR password
+        VARCHAR(255) first_name
+        VARCHAR(255) last_name
+        VARCHAR(255) email UNIQUE
+        VARCHAR(255) password
         BOOLEAN is_admin
     }
 
     PLACE {
         CHAR(36) id PK
-        VARCHAR title
+        VARCHAR(255) title
         TEXT description
-        DECIMAL price
+        DECIMAL(10,2) price
         FLOAT latitude
         FLOAT longitude
         CHAR(36) owner_id FK
@@ -30,7 +37,7 @@ erDiagram
 
     AMENITY {
         CHAR(36) id PK
-        VARCHAR name
+        VARCHAR(255) name UNIQUE
     }
 
     PLACE_AMENITY {
@@ -38,28 +45,34 @@ erDiagram
         CHAR(36) amenity_id FK
     }
 
-    USER ||--o{ PLACE : owns
-    USER ||--o{ REVIEW : writes
-    PLACE ||--o{ REVIEW : receives
-    PLACE ||--o{ PLACE_AMENITY : has
-    AMENITY ||--o{ PLACE_AMENITY : included_in
+    USER  ||--o{  PLACE          : owns
+    USER  ||--o{  REVIEW         : writes
+    PLACE ||--o{  REVIEW         : has
+    PLACE ||--o{  PLACE_AMENITY  : links
+    AMENITY ||--o{ PLACE_AMENITY : links
 ```
-```
-🔗 Relationships
+Relationships
 One-to-Many
-From	To	Meaning
-USER → PLACE	A user can own many places	
-USER → REVIEW	A user can write many reviews	
-PLACE → REVIEW	A place can have many reviews	
-Many-to-Many
-Tables	Description
-PLACE ↔ AMENITY	A place can have many amenities, and an amenity can belong to many places via PLACE_AMENITY
-```
-📘 Cardinality Symbols
 
-| Symbol | Meaning      |             |             |
-| ------ | ------------ | ----------- | ----------- |
-| `      |              | `           | Exactly one |
-| `o     | `            | Zero or one |             |
-| `}     | `            | One or more |             |
-| `}o`   | Zero or more |             |             |
+USER → PLACE: one user can own zero or many places
+FK: PLACE.owner_id → USER.id
+
+USER → REVIEW: one user can write zero or many reviews
+FK: REVIEW.user_id → USER.id
+
+PLACE → REVIEW: one place can have zero or many reviews
+FK: REVIEW.place_id → PLACE.id
+
+Many-to-Many
+
+PLACE ↔ AMENITY via PLACE_AMENITY
+FKs:
+PLACE_AMENITY.place_id → PLACE.id
+PLACE_AMENITY.amenity_id → AMENITY.id
+
+Cardinality Symbols (Mermaid)
+Symbol	Meaning
+`	
+`o	`
+}o	Zero or more
+`}	`
