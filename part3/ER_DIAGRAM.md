@@ -4,23 +4,23 @@
 
 
 ## ER Diagram (Mermaid)
-```
-mermaid
+```mermaid
 erDiagram
+
     USER {
         CHAR(36) id PK
-        VARCHAR(255) first_name
-        VARCHAR(255) last_name
-        VARCHAR(255) email UNIQUE
-        VARCHAR(255) password
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR email
+        VARCHAR password
         BOOLEAN is_admin
     }
 
     PLACE {
         CHAR(36) id PK
-        VARCHAR(255) title
+        VARCHAR title
         TEXT description
-        DECIMAL(10,2) price
+        DECIMAL price
         FLOAT latitude
         FLOAT longitude
         CHAR(36) owner_id FK
@@ -36,7 +36,7 @@ erDiagram
 
     AMENITY {
         CHAR(36) id PK
-        VARCHAR(255) name UNIQUE
+        VARCHAR name
     }
 
     PLACE_AMENITY {
@@ -44,12 +44,13 @@ erDiagram
         CHAR(36) amenity_id FK
     }
 
-    USER  ||--o{  PLACE          : owns
-    USER  ||--o{  REVIEW         : writes
-    PLACE ||--o{  REVIEW         : has
-    PLACE ||--o{  PLACE_AMENITY  : links
-    AMENITY ||--o{ PLACE_AMENITY : links
+    USER ||--o{ PLACE : owns
+    USER ||--o{ REVIEW : writes
+    PLACE ||--o{ REVIEW : receives
+    PLACE ||--o{ PLACE_AMENITY : has
+    AMENITY ||--o{ PLACE_AMENITY : included_in
 ```
+
 Relationships
 One-to-Many
 
