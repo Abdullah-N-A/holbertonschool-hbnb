@@ -1,5 +1,6 @@
+#app/api/v1/reviews.py
 from flask_restx import Namespace, Resource, fields
-from app.business.models.facade import HBnBFacade
+from app.business.facade import HBnBFacade
 from app.models.review import Review
 from app.models.user import User
 from app.models.place import Place
