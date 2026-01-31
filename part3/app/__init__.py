@@ -25,9 +25,11 @@ def create_app(config_class=Config):
     from app.routes.review_routes import review_bp
     from app.routes.amenity_routes import amenity_bp  # Admin-only amenities
 
-    app.register_blueprint(user_bp, url_prefix='/users')      # User endpoints
-    app.register_blueprint(place_bp, url_prefix='/places')    # Place endpoints
-    app.register_blueprint(review_bp, url_prefix='/reviews')  # Review endpoints
-    app.register_blueprint(amenity_bp, url_prefix='/amenities')  # Amenity endpoints
+
+
+    app.register_blueprint(user_bp, url_prefix='/api/v1/users')
+    app.register_blueprint(place_bp, url_prefix='/api/v1/places')
+    app.register_blueprint(review_bp, url_prefix='/api/v1/reviews')
+    app.register_blueprint(amenity_bp, url_prefix='/api/v1/amenities')
 
     return app
