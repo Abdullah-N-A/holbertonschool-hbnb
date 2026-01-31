@@ -1,12 +1,12 @@
+# app/models/amenity.py
+from app.extensions import db
 from .base_model import BaseModel
 
-
 class Amenity(BaseModel):
-    def __init__(self, name):
-        super().__init__()
+    __tablename__ = "amenities"
 
-        if not name:
-            raise ValueError("Amenity name is required")
+    name = db.Column(db.String(128), nullable=False)
+    description = db.Column(db.String(255), default="", nullable=True)
 
-        self.name = name
-        self.description = description
+    def __repr__(self):
+        return f"<Amenity {self.name}>"

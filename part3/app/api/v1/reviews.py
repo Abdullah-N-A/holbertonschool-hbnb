@@ -1,132 +1,128 @@
+# app/api/v1/reviews.py
 from flask_restx import Namespace, Resource, fields
-from app.business.models.facade import HBnBFacade
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from app.business.facade import HBnBFacade
 from app.models.review import Review
 from app.models.user import User
 from app.models.place import Place
 
 facade = HBnBFacade()
+api = Namespace("reviews", description="Review operations")
 
-api = Namespace('reviews', description='Review operations')
+review_model = api.model(
+    "Review",
+    {
+        "text": fields.String(required=True),
+        "rating": fields.Integer(required=True),
+        "place_id": fields.String(required=True),
+    },
+)
 
-review_model = api.model('Review', {
-    'text': fields.String(required=True, description='Review text'),
-    'rating': fields.Integer(required=True, description='Rating from 1 to 5'),
-    'user_id': fields.String(required=True, description='ID of the user who writes the review'),
-    'place_id': fields.String(required=True, description='ID of the place being reviewed')
-})
-@api.route('/')
+@api.route("/")
 class ReviewList(Resource):
-    @api.response(200, 'List of reviews retrieved successfully')
     def get(self):
-        """Retrieve all reviews"""
-        reviews = [obj for obj in facade.get_all() if isinstance(obj, Review)]
-        result = []
-        for r in reviews:
-            result.append({
-                'id': r.id,
-                'text': r.text,
-                'rating': r.rating,
-                'user_id': r.user.id,
-                'place_id': r.place.id,
-                'created_at': r.created_at.isoformat(),
-                'updated_at': r.updated_at.isoformat()
-            })
-        return result, 200
+        reviews = Review.query.all()
+        return [{
+            "id": r.id,
+            "text": r.text,
+            "rating": r.rating,
+            "user_id": r.user_id,
+            "place_id": r.place_id,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+        } for r in reviews], 200
 
+    @jwt_required()
     @api.expect(review_model, validate=True)
-    @api.response(201, 'Review successfully created')
-    @api.response(400, 'Invalid input data')
     def post(self):
-        """Create a new review"""
         data = api.payload or {}
 
-        # Validate required fields
-        required_fields = ['text', 'rating', 'user_id', 'place_id']
-        for field in required_fields:
-            if field not in data:
-                return {'error': f'{field} is required'}, 400
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return {"error": "User not found"}, 400
 
-        # Validate user
-        user = facade.get(data['user_id'])
-        if not user or not isinstance(user, User):
-            return {'error': 'User not found'}, 400
+        place = Place.query.get(data["place_id"])
+        if not place:
+            return {"error": "Place not found"}, 400
 
-        # Validate place
-        place = facade.get(data['place_id'])
-        if not place or not isinstance(place, Place):
-            return {'error': 'Place not found'}, 400
-
-        # Create review
         new_review = Review(
-            text=data['text'],
-            rating=data['rating'],
-            user=user,
-            place=place
+            text=data["text"],
+            rating=data["rating"],
+            user_id=user.id,
+            place_id=place.id,
         )
 
-        created_review = facade.create(new_review)
+        created = facade.create(new_review)
 
         return {
-            'id': created_review.id,
-            'text': created_review.text,
-            'rating': created_review.rating,
-            'user_id': created_review.user.id,
-            'place_id': created_review.place.id,
-            'created_at': created_review.created_at.isoformat(),
-            'updated_at': created_review.updated_at.isoformat()
+            "id": created.id,
+            "text": created.text,
+            "rating": created.rating,
+            "user_id": created.user_id,
+            "place_id": created.place_id,
+            "created_at": created.created_at.isoformat() if created.created_at else None,
+            "updated_at": created.updated_at.isoformat() if created.updated_at else None,
         }, 201
 
 
-@api.route('/<string:review_id>')
+@api.route("/<string:review_id>")
 class ReviewResource(Resource):
-    @api.response(200, 'Review retrieved successfully')
-    @api.response(404, 'Review not found')
     def get(self, review_id):
-        """Get review by ID"""
-        r = facade.get(review_id)
-        if not r or not isinstance(r, Review):
-            return {'error': 'Review not found'}, 404
-
+        r = Review.query.get(review_id)
+        if not r:
+            return {"error": "Review not found"}, 404
         return {
-            'id': r.id,
-            'text': r.text,
-            'rating': r.rating,
-            'user_id': r.user.id,
-            'place_id': r.place.id,
-            'created_at': r.created_at.isoformat(),
-            'updated_at': r.updated_at.isoformat()
+            "id": r.id,
+            "text": r.text,
+            "rating": r.rating,
+            "user_id": r.user_id,
+            "place_id": r.place_id,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "updated_at": r.updated_at.isoformat() if r.updated_at else None,
         }, 200
 
-    @api.expect(review_model)
-    @api.response(200, 'Review updated successfully')
-    @api.response(404, 'Review not found')
-    @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, review_id):
-        """Update review"""
-        r = facade.get(review_id)
-        if not r or not isinstance(r, Review):
-            return {'error': 'Review not found'}, 404
+        r = Review.query.get(review_id)
+        if not r:
+            return {"error": "Review not found"}, 404
+
+        claims = get_jwt()
+        user_id = get_jwt_identity()
+        if not claims.get("is_admin") and r.user_id != user_id:
+            return {"error": "Forbidden"}, 403
 
         data = api.payload or {}
-        updated_review = facade.update(review_id, data)
+        data.pop("user_id", None)
+        data.pop("place_id", None)
+
+        updated = facade.update(review_id, data)
 
         return {
-            'id': updated_review.id,
-            'text': updated_review.text,
-            'rating': updated_review.rating,
-            'user_id': updated_review.user.id,
-            'place_id': updated_review.place.id,
-            'created_at': updated_review.created_at.isoformat(),
-            'updated_at': updated_review.updated_at.isoformat()
+            "id": updated.id,
+            "text": updated.text,
+            "rating": updated.rating,
+            "user_id": updated.user_id,
+            "place_id": updated.place_id,
+            "created_at": updated.created_at.isoformat() if updated.created_at else None,
+            "updated_at": updated.updated_at.isoformat() if updated.updated_at else None,
         }, 200
 
-    @api.response(204, 'Review deleted successfully')
-    @api.response(404, 'Review not found')
+    @jwt_required()
     def delete(self, review_id):
-        """Delete review"""
+        r = Review.query.get(review_id)
+        if not r:
+            return {"error": "Review not found"}, 404
+
+        claims = get_jwt()
+        user_id = get_jwt_identity()
+        if not claims.get("is_admin") and r.user_id != user_id:
+            return {"error": "Admin only"}, 403
         r = facade.get(review_id)
         if not r or not isinstance(r, Review):
-            return {'error': 'Review not found'}, 404
+            
+            return {"error": "Review not found"}, 404
 
         facade.delete(review_id)
-        return '', 204
+        return "", 204
