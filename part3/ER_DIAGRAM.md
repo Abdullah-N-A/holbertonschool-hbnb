@@ -1,6 +1,5 @@
 # HBnB — Database ER Diagram (Task 10)
 
-> Paste this file as `README.md` (or `TASK_10_README.md`) in your repo.
 
 ---
 
@@ -50,7 +49,7 @@ erDiagram
     PLACE ||--o{  REVIEW         : has
     PLACE ||--o{  PLACE_AMENITY  : links
     AMENITY ||--o{ PLACE_AMENITY : links
-```
+
 Relationships
 One-to-Many
 
