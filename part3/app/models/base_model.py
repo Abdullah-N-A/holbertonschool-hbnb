@@ -11,10 +11,10 @@ class BaseModel(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     def to_dict(self):
-        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
-        # ISO format for datetime
-        if "created_at" in data and data["created_at"]:
-            data["created_at"] = data["created_at"].isoformat()
-        if "updated_at" in data and data["updated_at"]:
-            data["updated_at"] = data["updated_at"].isoformat()
+        data = {}
+        for c in self.__table__.columns:
+            val = getattr(self, c.name)
+            if isinstance(val, datetime):
+                val = val.isoformat()
+            data[c.name] = val
         return data
