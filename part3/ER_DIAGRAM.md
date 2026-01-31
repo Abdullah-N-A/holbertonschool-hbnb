@@ -4,8 +4,8 @@
 
 
 ## ER Diagram (Mermaid)
-
-```mermaid
+```
+mermaid
 erDiagram
     USER {
         CHAR(36) id PK
@@ -75,3 +75,4 @@ Symbol	Meaning
 `o	`
 }o	Zero or more
 `}	`
+```
