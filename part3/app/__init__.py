@@ -12,7 +12,9 @@ def create_app(config_class="development"):
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
-
+# ✅ Create DB tables automatically (development only)
+    with app.app_context():
+        db.create_all()
     CORS(
         app,
         origins=["*"],
