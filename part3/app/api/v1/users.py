@@ -1,3 +1,4 @@
+#app/api/v1/users.py
 from flask import request
 from flask_restx import Namespace, Resource
 from app.business.facade import HBnBFacade
@@ -6,14 +7,10 @@ from app.models.user import User
 facade = HBnBFacade()
 
 
-users_ns = Namespace(
-    "users",
-    description="User operations",
-    path="/api/v1/users"
-)
+api = Namespace("users", description="User operations")
 
 
-@users_ns.route("/")
+@api.route("/")
 class UsersList(Resource):
     def get(self):
         users = facade.get_all()
@@ -49,7 +46,7 @@ class UsersList(Resource):
         }, 201
 
 
-@users_ns.route("/<string:user_id>")
+@api.route("/<string:user_id>")
 class UserDetail(Resource):
     def get(self, user_id):
         user = facade.get(user_id)

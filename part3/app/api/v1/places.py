@@ -1,3 +1,4 @@
+#app/api/v1/places.py
 from flask_restx import Namespace, Resource, fields
 from app.business.facade import HBnBFacade
 from app.models.place import Place
