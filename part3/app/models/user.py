@@ -15,8 +15,8 @@ class User(BaseModel):
     places = db.relationship("Place", backref="owner", lazy=True)
     reviews = db.relationship("Review", backref="user", lazy=True)
 
-    def hash_password(self, plain_password: str):
+    def set_password(self, plain_password: str):
         self.password = bcrypt.generate_password_hash(plain_password).decode("utf-8")
 
-    def verify_password(self, plain_password: str) -> bool:
+    def check_password(self, plain_password: str) -> bool:
         return bcrypt.check_password_hash(self.password, plain_password)
