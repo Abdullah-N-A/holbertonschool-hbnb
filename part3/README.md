@@ -1,75 +1,78 @@
-HBnB (Part 3) — Flask REST API + SQLAlchemy + JWT
+# HBnB (Part 3) — Flask REST API + SQLAlchemy + JWT
 
-Backend API for the HBnB Project (Part 3).
+Backend API for the **HBnB Project (Part 3)**.  
 Implements SQLAlchemy persistence, JWT authentication, and Swagger documentation using Flask-RESTX.
 
-🚀 Features
+---
 
-Flask Application Factory
+## Features
 
-SQLite database (development) + in-memory DB (testing)
+- Flask Application Factory
+- SQLite database (development) + in-memory DB (testing)
+- SQLAlchemy models: User, Place, Review, Amenity
+- JWT Authentication (`/api/v1/auth/login`)
+- Protected endpoints with role support
+- Full REST API (CRUD)
+- Swagger UI (Flask-RESTX)
 
-SQLAlchemy models: User, Place, Review, Amenity
+---
 
-JWT Authentication (/api/v1/auth/login)
+## Tech Stack
 
-Protected endpoints with role support
+- Python 3  
+- Flask  
+- Flask-RESTX  
+- Flask-SQLAlchemy  
+- Flask-JWT-Extended  
+- Flask-Bcrypt  
+- SQLite  
 
-Full REST API (CRUD)
+---
 
-Swagger UI (Flask-RESTX)
+## Project Structure
 
-🧰 Tech Stack
 
-Python 3
 
-Flask
-
-Flask-RESTX
-
-Flask-SQLAlchemy
-
-Flask-JWT-Extended
-
-Flask-Bcrypt
-
-SQLite
-
-📁 Project Structure
 part3/
 ├─ app/
-│  ├─ __init__.py
-│  ├─ extensions.py
-│  ├─ business/
-│  │  └─ facade.py
-│  ├─ models/
-│  │  ├─ __init__.py
-│  │  ├─ base_model.py
-│  │  ├─ user.py
-│  │  ├─ place.py
-│  │  ├─ review.py
-│  │  └─ amenity.py
-│  └─ api/
-│     └─ v1/
-│        ├─ users.py
-│        ├─ places.py
-│        ├─ reviews.py
-│        ├─ amenities.py
-│        └─ auth.py
+│ ├─ init.py
+│ ├─ extensions.py
+│ ├─ business/
+│ │ └─ facade.py
+│ ├─ models/
+│ │ ├─ init.py
+│ │ ├─ base_model.py
+│ │ ├─ user.py
+│ │ ├─ place.py
+│ │ ├─ review.py
+│ │ └─ amenity.py
+│ └─ api/
+│ └─ v1/
+│ ├─ users.py
+│ ├─ places.py
+│ ├─ reviews.py
+│ ├─ amenities.py
+│ └─ auth.py
 ├─ config.py
 ├─ run.py
 ├─ requirements.txt
 ├─ seed.py
-└─ instance/        # created at runtime (ignored by git)
+└─ instance/ # created at runtime (ignored by git)
 
-⚙️ Setup Instructions
-1️⃣ Install Dependencies
+
+---
+
+## Setup Instructions
+
+### 1) Install Dependencies
+
+```bash
 pip3 install -r requirements.txt
 
-2️⃣ Create Database Tables
+2) Create Database Tables
 python3 -c "from app import create_app; from app.extensions import db; app=create_app(); app.app_context().push(); db.create_all(); print('DB TABLES CREATED')"
 
-3️⃣ Seed Initial Data (Admin + Amenities)
+3) Seed Initial Data (Admin + Amenities)
 python3 seed.py
 
 
@@ -79,7 +82,7 @@ Admin user → admin@hbnb.io / admin1234
 
 Default amenities
 
-4️⃣ Run the Server
+4) Run the Server
 python3 run.py
 
 
@@ -87,10 +90,10 @@ Server runs at:
 
 http://127.0.0.1:5000
 
-📚 Swagger API Docs
+Swagger API Docs
 http://127.0.0.1:5000/api/v1/
 
-🔐 Authentication
+Authentication
 Login and get JWT
 curl -s -X POST http://127.0.0.1:5000/api/v1/auth/login \
   -H "Content-Type: application/json" \
@@ -105,41 +108,41 @@ Get current user (Protected)
 curl -s http://127.0.0.1:5000/api/v1/auth/me \
   -H "Authorization: Bearer $TOKEN"
 
-📡 API Endpoints
+API Endpoints
 
 Base URL: /api/v1
 
-👤 Users
+Users
 Method	Endpoint	Description
 GET	/users/	Get all users
 POST	/users/	Create new user
 GET	/users/<user_id>	Get user
 PUT	/users/<user_id>	Update user
-🏠 Places
+Places
 Method	Endpoint	Description
 GET	/places/	Get all places
 POST	/places/	Create place
 GET	/places/<place_id>	Get place
 PUT	/places/<place_id>	Update place
 GET	/places/<place_id>/reviews	Get reviews
-⭐ Reviews
+Reviews
 Method	Endpoint	Description
 GET	/reviews/	Get all reviews
 POST	/reviews/	Create review
 GET	/reviews/<review_id>	Get review
 PUT	/reviews/<review_id>	Update review
 DELETE	/reviews/<review_id>	Delete review
-🛠 Amenities
+Amenities
 Method	Endpoint	Description
 GET	/amenities/	Get amenities
 POST	/amenities/	Create amenity
 GET	/amenities/<amenity_id>	Get amenity
 PUT	/amenities/<amenity_id>	Update amenity
-🔐 Auth
+Auth
 Method	Endpoint	Description
 POST	/auth/login	Get JWT
 GET	/auth/me	Current user
-🧪 Quick Smoke Test
+Quick Smoke Test
 curl -I http://127.0.0.1:5000/api/v1/
 curl -s http://127.0.0.1:5000/api/v1/users/
 curl -s http://127.0.0.1:5000/api/v1/amenities/
@@ -152,12 +155,12 @@ curl -X POST http://127.0.0.1:5000/api/v1/places/ \
 
 curl -s http://127.0.0.1:5000/api/v1/places/
 
-⚠️ Important Note
+Important Note
 
 The SQLite database file (instance/development.db) is NOT committed to Git.
 It is automatically created when running setup steps.
 
-👨‍💻 Authors
+Authors
 
 Abdullah Alasiri
 Ghalyah Alotaibi
