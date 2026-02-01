@@ -49,8 +49,8 @@ part3/
 │ ├─ amenities.py
 │ └─ auth.py
 ├─ config.py
-└─ instance/
-└─ development.db
+└─ instance/─      development.db                          # created at runtime (ignored by git)
+
 ```
 
 ## Project Structure
