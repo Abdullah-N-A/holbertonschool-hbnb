@@ -56,12 +56,14 @@ part3/
 ├─ run.py
 ├─ requirements.txt
 ├─ seed.py
+├─ schema.sql
+├─ seed.sql
 └─ instance/        # created at runtime (ignored by git)
 ```
 
 ---
 
-## Setup Instructions
+## Setup Instructions (Flask API)
 
 ### 1) Install Dependencies
 
@@ -69,7 +71,7 @@ part3/
 pip3 install -r requirements.txt
 ```
 
-### 2) Create Database Tables
+### 2) Create Database Tables (SQLAlchemy)
 
 ```bash
 python3 -c "from app import create_app; from app.extensions import db; app=create_app(); app.app_context().push(); db.create_all(); print('DB TABLES CREATED')"
@@ -81,10 +83,11 @@ python3 -c "from app import create_app; from app.extensions import db; app=creat
 python3 seed.py
 ```
 
-This creates:
+Admin credentials:
 
-- Admin user → `admin@hbnb.io / admin1234`
-- Default amenities
+```
+admin@hbnb.io / admin1234
+```
 
 ### 4) Run the Server
 
@@ -92,15 +95,7 @@ This creates:
 python3 run.py
 ```
 
-Server runs at:
-
-```
-http://127.0.0.1:5000
-```
-
----
-
-## Swagger API Docs
+Swagger Docs:
 
 ```
 http://127.0.0.1:5000/api/v1/
@@ -108,9 +103,30 @@ http://127.0.0.1:5000/api/v1/
 
 ---
 
-## Authentication
+## SQL Scripts (Raw SQL Task)
 
-### Login and get JWT
+To test the database schema **without ORM**:
+
+```bash
+sqlite3 raw_test.db < schema.sql
+sqlite3 raw_test.db < seed.sql
+sqlite3 raw_test.db ".tables"
+sqlite3 raw_test.db "SELECT email, is_admin FROM users;"
+sqlite3 raw_test.db "SELECT name FROM amenities;"
+```
+
+Expected:
+
+```
+admin@hbnb.io | 1
+WiFi
+Swimming Pool
+Air Conditioning
+```
+
+---
+
+## Authentication
 
 ```bash
 curl -s -X POST http://127.0.0.1:5000/api/v1/auth/login \
@@ -118,97 +134,12 @@ curl -s -X POST http://127.0.0.1:5000/api/v1/auth/login \
   -d '{"email":"admin@hbnb.io","password":"admin1234"}'
 ```
 
-Copy the token and export:
-
-```bash
-TOKEN="PASTE_TOKEN_HERE"
-```
-
-### Get current user (Protected)
-
-```bash
-curl -s http://127.0.0.1:5000/api/v1/auth/me \
-  -H "Authorization: Bearer $TOKEN"
-```
-
----
-
-## API Endpoints
-
-**Base URL:** `/api/v1`
-
-### Users
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/users/` | Get all users |
-| POST | `/users/` | Create new user |
-| GET | `/users/<user_id>` | Get user |
-| PUT | `/users/<user_id>` | Update user |
-
-### Places
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/places/` | Get all places |
-| POST | `/places/` | Create place |
-| GET | `/places/<place_id>` | Get place |
-| PUT | `/places/<place_id>` | Update place |
-| GET | `/places/<place_id>/reviews` | Get reviews |
-
-### Reviews
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/reviews/` | Get all reviews |
-| POST | `/reviews/` | Create review |
-| GET | `/reviews/<review_id>` | Get review |
-| PUT | `/reviews/<review_id>` | Update review |
-| DELETE | `/reviews/<review_id>` | Delete review |
-
-### Amenities
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/amenities/` | Get amenities |
-| POST | `/amenities/` | Create amenity |
-| GET | `/amenities/<amenity_id>` | Get amenity |
-| PUT | `/amenities/<amenity_id>` | Update amenity |
-
-### Auth
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/login` | Get JWT |
-| GET | `/auth/me` | Current user |
-
----
-
-## Quick Smoke Test
-
-```bash
-curl -I http://127.0.0.1:5000/api/v1/
-curl -s http://127.0.0.1:5000/api/v1/users/
-curl -s http://127.0.0.1:5000/api/v1/amenities/
-```
-
-### Test DB Persistence
-
-```bash
-curl -X POST http://127.0.0.1:5000/api/v1/places/ \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Place","city":"Riyadh","price_per_night":100,"owner_id":"36c9050e-ddd3-4c3b-9731-9f487208bbc1"}'
-
-curl -s http://127.0.0.1:5000/api/v1/places/
-```
-
 ---
 
 ## Important Note
 
 The SQLite database file (`instance/development.db`) is **NOT committed to Git**.  
-It is automatically created when running setup steps.
+It is automatically created during setup.
 
 ---
 
