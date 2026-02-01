@@ -5,7 +5,7 @@ from app.business.facade import HBnBFacade
 from app.models.review import Review
 from app.models.user import User
 from app.models.place import Place
-
+from sqlalchemy.exc import IntegrityError
 facade = HBnBFacade()
 api = Namespace("reviews", description="Review operations")
 
@@ -31,7 +31,6 @@ class ReviewList(Resource):
             "created_at": r.created_at.isoformat() if r.created_at else None,
             "updated_at": r.updated_at.isoformat() if r.updated_at else None,
         } for r in reviews], 200
-
     @jwt_required()
     @api.expect(review_model, validate=True)
     def post(self):
@@ -46,14 +45,24 @@ class ReviewList(Resource):
         if not place:
             return {"error": "Place not found"}, 400
 
-        new_review = Review(
-            text=data["text"],
-            rating=data["rating"],
-            user_id=user.id,
-            place_id=place.id,
-        )
+        try:
+            new_review = Review(
+                text=data["text"],
+                rating=data["rating"],
+                user_id=user.id,
+                place_id=place.id,
+            )
+        except ValueError as e:
+            return {"error": str(e)}, 400
 
-        created = facade.create(new_review)
+      
+        try:
+            created = facade.create(new_review)
+        except IntegrityError:
+            return {"error": "User already reviewed this place"}, 400
+        except ValueError as e:
+            # لو facade يسوي validations ويرمي ValueError
+            return {"error": str(e)}, 400
 
         return {
             "id": created.id,
@@ -126,3 +135,4 @@ class ReviewResource(Resource):
 
         facade.delete(review_id)
         return "", 204
+
