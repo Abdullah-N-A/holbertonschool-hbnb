@@ -70,3 +70,28 @@ python3 -c "from app import create_app; from app.extensions import db; app=creat
 from app.models import User, Place, Review, Amenity;
 with app.app_context(): db.create_all(); print('DB TABLES CREATED')"
 ```
+# 3) Run Server
+```
+flask --app app run --host=0.0.0.0 --port=5000
+```
+# Swagger (API Docs)
+Swagger is available at:
+
+http://127.0.0.1:5000/api/v1/
+
+# Authentication
+# Login (Get JWT)
+```
+curl -s -X POST http://127.0.0.1:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@hbnb.io","password":"admin1234"}'
+```
+Export token:
+```
+TOKEN="PASTE_TOKEN_HERE"
+```
+# Example Protected Endpoint
+```
+curl -s http://127.0.0.1:5000/api/v1/auth/me \
+  -H "Authorization: Bearer $TOKEN"
+```
