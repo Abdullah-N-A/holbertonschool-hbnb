@@ -32,7 +32,7 @@ Implements SQLAlchemy persistence, JWT authentication, and Swagger documentation
 ## Project Structure
 
 
-
+```
 part3/
 ├─ app/
 │ ├─ init.py
@@ -58,7 +58,7 @@ part3/
 ├─ requirements.txt
 ├─ seed.py
 └─ instance/ # created at runtime (ignored by git)
-
+```
 
 ---
 
