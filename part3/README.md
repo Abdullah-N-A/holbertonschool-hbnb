@@ -27,6 +27,7 @@ Includes SQLAlchemy persistence, JWT authentication, and Swagger documentation v
 - SQLite (dev)
 
 ---
+```
 part3/
 ├─ app/
 │ ├─ init.py
