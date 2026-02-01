@@ -168,5 +168,5 @@ curl -s http://127.0.0.1:5000/api/v1/amenities/
 ```
 # Author
 
-# Abdullah  Al-ASiri
-# Ghalyah Alotaibi
+### Abdullah  Alasiri
+###  Ghalyah Alotaibi
