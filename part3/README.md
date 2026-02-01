@@ -58,21 +58,18 @@ part3/
 ---
 
 ## Setup
-
-### 1) Install Dependencies
-
-```bash
+# 1) Install dependencies
 pip3 install -r requirements.txt
-```
-# 2) Create Database Tables
-```
-python3 -c "from app import create_app; from app.extensions import db; app=create_app();
-from app.models import User, Place, Review, Amenity;
-with app.app_context(): db.create_all(); print('DB TABLES CREATED')"
-```
-# 3) Run Server
-```
-flask --app app run --host=0.0.0.0 --port=5000
+
+# 2) Create tables
+python3 -c "from app import create_app; from app.extensions import db; app=create_app(); app.app_context().push(); db.create_all(); print('DB TABLES CREATED')"
+
+# 3) Seed admin + amenities (required for login)
+python3 seed.py
+
+# 4) Run server
+python3 run.py
+
 ```
 # Swagger (API Docs)
 Swagger is available at:
