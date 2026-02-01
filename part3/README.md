@@ -96,55 +96,69 @@ curl -s http://127.0.0.1:5000/api/v1/auth/me \
   -H "Authorization: Bearer $TOKEN"
 ```
 # API Endpoints
-Base URL: /api/v1
-Users
+## Base URL: /api/v1
+## Users
 
-GET /users/
+## GET /users/
 
-POST /users/
+## POST /users/
 
-GET /users/<user_id>
+## GET /users/<user_id>
 
-PUT /users/<user_id>
+## PUT /users/<user_id>
 
-Places
+## Places
 
-GET /places/
+## GET /places/
 
-POST /places/
+## POST /places/
 
-GET /places/<place_id>
+## GET /places/<place_id>
 
-PUT /places/<place_id>
+## PUT /places/<place_id>
 
-GET /places/<place_id>/reviews
+## GET /places/<place_id>/reviews
 
-Reviews
+## Reviews
 
-GET /reviews/
+## GET /reviews/
 
-POST /reviews/
+## POST /reviews/
 
-GET /reviews/<review_id>
+## GET /reviews/<review_id>
 
-PUT /reviews/<review_id>
+## PUT /reviews/<review_id>
 
-DELETE /reviews/<review_id>
+## DELETE /reviews/<review_id>
 
-Amenities
+## Amenities
 
-GET /amenities/
+## GET /amenities/
 
-POST /amenities/
+## POST /amenities/
 
-GET /amenities/<amenity_id>
+## GET /amenities/<amenity_id>
 
-PUT /amenities/<amenity_id>
+## PUT /amenities/<amenity_id>
 
-Auth
+## Auth
 
-POST /auth/login
+## POST /auth/login
 
-GET /auth/me (protected)
+## GET /auth/me (protected)
 
-Quick Smoke Test (Terminal)
+## Quick Smoke Test (Terminal)
+```
+# Swagger
+curl -I http://127.0.0.1:5000/api/v1/
+
+# Users
+curl -s http://127.0.0.1:5000/api/v1/users/
+
+# Amenities
+curl -s http://127.0.0.1:5000/api/v1/amenities/
+```
+# Author
+
+## Abdullah  Al-ASiri
+## Ghalyah Alotaibi
