@@ -63,9 +63,8 @@ part3/
 
 ```bash
 pip3 install -r requirements.txt
-
-# 2) Create Database Tables
 ```
+# 2) Create Database Tables
 python3 -c "from app import create_app; from app.extensions import db; app=create_app();
 from app.models import User, Place, Review, Amenity;
 with app.app_context(): db.create_all(); print('DB TABLES CREATED')"
