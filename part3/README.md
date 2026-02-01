@@ -95,3 +95,56 @@ TOKEN="PASTE_TOKEN_HERE"
 curl -s http://127.0.0.1:5000/api/v1/auth/me \
   -H "Authorization: Bearer $TOKEN"
 ```
+# API Endpoints
+Base URL: /api/v1
+Users
+
+GET /users/
+
+POST /users/
+
+GET /users/<user_id>
+
+PUT /users/<user_id>
+
+Places
+
+GET /places/
+
+POST /places/
+
+GET /places/<place_id>
+
+PUT /places/<place_id>
+
+GET /places/<place_id>/reviews
+
+Reviews
+
+GET /reviews/
+
+POST /reviews/
+
+GET /reviews/<review_id>
+
+PUT /reviews/<review_id>
+
+DELETE /reviews/<review_id>
+
+Amenities
+
+GET /amenities/
+
+POST /amenities/
+
+GET /amenities/<amenity_id>
+
+PUT /amenities/<amenity_id>
+
+Auth
+
+POST /auth/login
+
+GET /auth/me (protected)
+
+Quick Smoke Test (Terminal)
