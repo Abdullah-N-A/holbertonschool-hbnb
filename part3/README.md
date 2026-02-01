@@ -68,12 +68,13 @@ part3/
 
 ```bash
 pip3 install -r requirements.txt
+```
 
-2) Create Database Tables
+2) Create Database Tables```
 python3 -c "from app import create_app; from app.extensions import db; app=create_app(); app.app_context().push(); db.create_all(); print('DB TABLES CREATED')"
-
+```
 3) Seed Initial Data (Admin + Amenities)
-python3 seed.py
+```python3 seed.py```
 
 
 This creates:
