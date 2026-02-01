@@ -95,59 +95,67 @@ TOKEN="PASTE_TOKEN_HERE"
 curl -s http://127.0.0.1:5000/api/v1/auth/me \
   -H "Authorization: Bearer $TOKEN"
 ```
-# API Endpoints
-## Base URL: /api/v1
-## Users
+## API Endpoints
 
-## GET /users/
+**Base URL:** `/api/v1`
 
-## POST /users/
+---
 
-## GET /users/<user_id>
+### 👤 Users
 
-## PUT /users/<user_id>
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/users/` | Get all users |
+| POST | `/users/` | Create new user |
+| GET | `/users/<user_id>` | Get user by ID |
+| PUT | `/users/<user_id>` | Update user |
 
-## Places
+---
 
-## GET /places/
+### 🏠 Places
 
-## POST /places/
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/places/` | Get all places |
+| POST | `/places/` | Create new place |
+| GET | `/places/<place_id>` | Get place by ID |
+| PUT | `/places/<place_id>` | Update place |
+| GET | `/places/<place_id>/reviews` | Get reviews for a place |
 
-GET /places/<place_id>
+---
 
- PUT /places/<place_id>
+### ⭐ Reviews
 
- GET /places/<place_id>/reviews
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/reviews/` | Get all reviews |
+| POST | `/reviews/` | Create new review |
+| GET | `/reviews/<review_id>` | Get review by ID |
+| PUT | `/reviews/<review_id>` | Update review |
+| DELETE | `/reviews/<review_id>` | Delete review |
 
- Reviews
+---
 
- GET /reviews/
+### 🛠 Amenities
 
- POST /reviews/
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/amenities/` | Get all amenities |
+| POST | `/amenities/` | Create new amenity |
+| GET | `/amenities/<amenity_id>` | Get amenity by ID |
+| PUT | `/amenities/<amenity_id>` | Update amenity |
 
- GET /reviews/<review_id>
+---
 
- PUT /reviews/<review_id>
+### 🔐 Authentication
 
- DELETE /reviews/<review_id>
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/login` | Login and receive JWT |
+| GET | `/auth/me` | Get current user info (Protected) |
 
-Amenities
 
- GET /amenities/
-
- POST /amenities/
-
- GET /amenities/<amenity_id>
-
- PUT /amenities/<amenity_id>
-
- Auth
-
- POST /auth/login
-
- GET /auth/me (protected)
-
- Quick Smoke Test (Terminal)
+ ## Quick Smoke Test (Terminal)
 ```
 # Swagger
 curl -I http://127.0.0.1:5000/api/v1/
