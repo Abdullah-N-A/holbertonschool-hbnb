@@ -21,7 +21,6 @@
   background: #fff;
 }
 
-/* Required button class */
 .details-button {
   display: inline-block;
   margin-top: 10px;
@@ -29,11 +28,10 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   text-decoration: none;
-  background: #333;
+  background: #222;
   color: #fff;
 }
 
-/* Place details required classes */
 .place-details {
   margin: 20px;
 }
@@ -46,7 +44,6 @@
   background: #fff;
 }
 
-/* Optional classes */
 .add-review {
   margin: 20px;
 }
@@ -57,9 +54,14 @@
   max-width: 520px;
 }
 
+/* Footer */
 footer {
   padding: 1rem 20px;
   text-align: center;
   color: #fff;
   background: #333;
+}
+#login-error {
+  color: #b00020;
+  margin: 10px 0;
 }
