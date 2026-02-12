@@ -2,49 +2,43 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Place Details - HBNB</title>
+    <title>Place Details</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<header>
-    <img src="logo.png" class="logo" alt="App Logo">
-    <a href="login.html" class="login-button">Login</a>
-</header>
-
-<main>
-    <h1>Cozy Apartment</h1>
-
-    <div class="place-card place-details">
-        <p><strong>Host:</strong> John Doe</p>
-        <p><strong>Price:</strong> $100 per night</p>
-        <p><strong>Description:</strong> A cozy apartment in the city center.</p>
-        <ul>
-            <li>Wifi</li>
-            <li>Parking</li>
-            <li>Air Conditioning</li>
-        </ul>
-    </div>
-
-    <h2>Reviews</h2>
-    <div class="review-card">
-        <p><strong>User:</strong> Alice</p>
-        <p><strong>Rating:</strong> 5/5</p>
-        <p>Great stay!</p>
-    </div>
-
-    <div class="review-card">
-        <p><strong>User:</strong> Bob</p>
-        <p><strong>Rating:</strong> 4/5</p>
-        <p>Nice place, very comfortable.</p>
-    </div>
-
-    <a href="add_review.html" class="details-button">Add Review</a>
-</main>
-
-<footer>
-    <p>All rights reserved © 2026</p>
-</footer>
-
+    <header>
+        <img src="logo.png" alt="HBNB Logo" class="logo">
+        <a href="login.html" class="login-button">Login</a>
+    </header>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="login.html">Login</a>
+    </nav>
+    <main>
+        <div class="place-details">
+            <h2>Place Name</h2>
+            <div class="place-info">
+                <p>Host: John Doe</p>
+                <p>Price per night: $120</p>
+                <p>Description: Cozy place in the city center.</p>
+                <p>Amenities: WiFi, Kitchen, Air Conditioning</p>
+            </div>
+            <button onclick="window.location.href='add_review.html';">Add Review</button>
+        </div>
+        <div class="review-card">
+            <p>User: Alice</p>
+            <p>Rating: 5/5</p>
+            <p>Comment: Loved it!</p>
+        </div>
+        <div class="review-card">
+            <p>User: Bob</p>
+            <p>Rating: 4/5</p>
+            <p>Comment: Very nice stay.</p>
+        </div>
+    </main>
+    <footer>
+        <p>All rights reserved &copy; 2026</p>
+    </footer>
+    <script src="scripts.js"></script>
 </body>
 </html>
