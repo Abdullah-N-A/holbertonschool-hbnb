@@ -15,39 +15,26 @@
 
     <nav aria-label="Main navigation">
       <a href="index.html">Home</a>
-      <a href="login.html" class="login-button">Login</a>
+      <a href="login.html" id="login-link" class="login-button">Login</a>
     </nav>
   </header>
 
   <main class="place-details">
     <h1>Place Details</h1>
 
+    <p id="place-error" role="alert"></p>
+
     <section id="place-details" class="place-info" aria-label="Place information">
       <!-- Place details will be populated dynamically -->
-      <p><strong>Host:</strong> Sample Host</p>
-      <p><strong>Price per night:</strong> $120</p>
-      <p><strong>Description:</strong> Sample description</p>
-
-      <h2>Amenities</h2>
-      <ul>
-        <li>Wi-Fi</li>
-        <li>Kitchen</li>
-      </ul>
     </section>
 
     <section id="reviews" aria-label="Reviews">
       <h2>Reviews</h2>
-
-      <!-- Example review card -->
-      <article class="review-card">
-        <p><strong>User:</strong> Sample User</p>
-        <p><strong>Rating:</strong> 5</p>
-        <p>Great place!</p>
-      </article>
+      <!-- Reviews will be populated dynamically -->
     </section>
 
     <p>
-      <a class="details-button" href="add_review.html?place_id=SAMPLE_ID">Add Review</a>
+      <a id="add-review-link" class="details-button" href="#">Add Review</a>
     </p>
   </main>
 

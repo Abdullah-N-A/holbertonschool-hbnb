@@ -15,7 +15,7 @@
 
     <nav aria-label="Main navigation">
       <a href="index.html">Home</a>
-      <a href="login.html" class="login-button">Login</a>
+      <a href="login.html" id="login-link" class="login-button">Login</a>
     </nav>
   </header>
 
@@ -23,6 +23,7 @@
     <h1>Add a Review</h1>
 
     <form id="review-form" class="form" action="#" method="post" aria-label="Add review form">
+      <p id="review-error" role="alert"></p>
       <p id="place-hint">Reviewing place: <strong>SAMPLE_ID</strong></p>
 
       <label for="review">Your Review:</label>

@@ -65,3 +65,8 @@ footer {
   color: #b00020;
   margin: 10px 0;
 }
+
+#review-error, #place-error, #login-error {
+  color: #b00020;
+  margin: 10px 0;
+}
