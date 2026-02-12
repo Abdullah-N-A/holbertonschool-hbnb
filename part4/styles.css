@@ -62,6 +62,12 @@ nav a {
     margin-bottom: 10px;
 }
 
+/* Amenities icons in place-info */
+.place-info img {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
 /* Add Review Form */
 .add-review form {
     display: flex;
