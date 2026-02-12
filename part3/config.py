@@ -6,16 +6,17 @@ class Config:
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///development.db"
+
 
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
 
-config = {
-    "development": DevelopmentConfig,
-    "testing": TestingConfig,
-    "default": DevelopmentConfig,
-}
+
+class ProductionConfig(Config):
+    DEBUG = False
+    # حط DB حقيقي لاحقًا لو تبغى

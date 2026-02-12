@@ -1,20 +1,22 @@
-# app/__init__.py
 from flask import Flask
 from flask_restx import Api
 from flask_cors import CORS
-from config import config
+
+from config import DevelopmentConfig
 from app.extensions import db, bcrypt, jwt
 
-def create_app(config_class="development"):
+def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
-    app.config.from_object(config[config_class])
+    app.config.from_object(config_class)
 
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
-# ✅ Create DB tables automatically (development only)
+
+    # ✅ Create DB tables automatically (development only)
     with app.app_context():
         db.create_all()
+
     CORS(
         app,
         origins=["*"],
@@ -23,7 +25,8 @@ def create_app(config_class="development"):
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     )
 
-    api = Api(app, version="1.0", title="HBnB API", description="HBnB Application API", doc="/api/v1/")
+    api = Api(app, version="1.0", title="HBnB API",
+              description="HBnB Application API", doc="/api/v1/")
 
     from app.api.v1.users import api as users_ns
     from app.api.v1.places import api as places_ns
@@ -36,5 +39,5 @@ def create_app(config_class="development"):
     api.add_namespace(reviews_ns, path="/api/v1/reviews")
     api.add_namespace(amenities_ns, path="/api/v1/amenities")
     api.add_namespace(auth_ns, path="/api/v1/auth")
-    
+
     return app
