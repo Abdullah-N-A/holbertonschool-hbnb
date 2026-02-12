@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Place Details</title>
+  <link rel="icon" href="icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <a href="index.html">
+      <img src="images/logo.png" alt="HBnB logo" class="logo">
+    </a>
+
+    <nav aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="login.html" class="login-button">Login</a>
+    </nav>
+  </header>
+
+  <main class="place-details">
+    <h1>Place Details</h1>
+
+    <section id="place-details" class="place-info" aria-label="Place information">
+      <!-- Place details will be populated dynamically -->
+      <p><strong>Host:</strong> Sample Host</p>
+      <p><strong>Price per night:</strong> $120</p>
+      <p><strong>Description:</strong> Sample description</p>
+
+      <h2>Amenities</h2>
+      <ul>
+        <li>Wi-Fi</li>
+        <li>Kitchen</li>
+      </ul>
+    </section>
+
+    <section id="reviews" aria-label="Reviews">
+      <h2>Reviews</h2>
+
+      <!-- Example review card -->
+      <article class="review-card">
+        <p><strong>User:</strong> Sample User</p>
+        <p><strong>Rating:</strong> 5</p>
+        <p>Great place!</p>
+      </article>
+    </section>
+
+    <p>
+      <a class="details-button" href="add_review.html?place_id=SAMPLE_ID">Add Review</a>
+    </p>
+  </main>
+
+  <footer>
+    <p>All rights reserved.</p>
+  </footer>
+
+  <script src="scripts.js"></script>
+</body>
+</html>
