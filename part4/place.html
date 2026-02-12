@@ -1,53 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Place Details</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/png" href="icon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holberton HBNB - Place Details</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="scripts.js" defer></script>
 </head>
 <body>
-    <header>
-        <img src="logo.png" alt="HBNB Logo" class="logo">
-        <a href="login.html" class="login-button">Login</a>
-    </header>
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="login.html">Login</a>
-    </nav>
-    <main>
-        <div class="place-details">
-            <h2>Place Name</h2>
-            <div class="place-info">
-                <p>Host: John Doe</p>
-                <p>Price per night: $120</p>
-                <p>Description: Cozy place in the city center.</p>
-                <p>
-                    Amenities: 
-                    <img src="icon_bed.png" alt="bed icon" width="20">
-                    <span>2 Beds</span>
-                    <img src="icon_bath.png" alt="bath icon" width="20">
-                    <span>1 Bath</span>
-                    <img src="icon_wifi.png" alt="wifi icon" width="20">
-                    <span>WiFi</span>
-                </p>
-            </div>
-            <button onclick="window.location.href='add_review.html';">Add Review</button>
-        </div>
-        <div class="review-card">
-            <p>User: Alice</p>
-            <p>Rating: 5/5</p>
-            <p>Comment: Loved it!</p>
-        </div>
-        <div class="review-card">
-            <p>User: Bob</p>
-            <p>Rating: 4/5</p>
-            <p>Comment: Very nice stay.</p>
-        </div>
-    </main>
-    <footer>
-        <p>All rights reserved &copy; 2026</p>
-    </footer>
-    <script src="scripts.js"></script>
+  <header>
+    <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
+    <a href="login.html" class="login-button">Login</a>
+  </header>
+
+  <main>
+    <h1>Place Details</h1>
+    <div class="place-card">
+      <img src="icon_bed.png" alt="Bed Icon">
+      <img src="icon_bath.png" alt="Bath Icon">
+      <img src="icon_wifi.png" alt="WiFi Icon">
+      <p>Beautiful place with all amenities!</p>
+      <button class="details-button">View Details</button>
+    </div>
+  </main>
 </body>
 </html>
