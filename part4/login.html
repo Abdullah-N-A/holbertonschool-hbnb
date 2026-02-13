@@ -1,52 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Holberton HBNB - Login</title>
+  <title>HBnB - Login</title>
+  <link rel="icon" href="images/icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script src="scripts.js" defer></script>
 </head>
 <body>
-  <header>
-    <nav class="navbar">
-      <div class="nav-container">
-        <a href="index.html" aria-label="Home">
-          <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
-        </a>
 
-        <div class="nav-links">
-          <a href="index.html" class="nav-link">Home</a>
-          <a href="login.html" class="login-button nav-link btn-login active">Login</a>
-        </div>
-      </div>
-    </nav>
-  </header>
+<header>
+  <div class="left">
+    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <a class="brand" href="index.html">hbnb</a>
+  </div>
+  <nav>
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="login-button" href="login.html">Login</a>
+  </nav>
+</header>
 
-  <main class="container">
-    <section class="auth-section">
-      <form id="login-form" class="auth-form" novalidate>
-        <h2>Login</h2>
+<main class="login-wrap">
+  <h1 class="page-title">Login</h1>
 
-        <div id="error-message" class="error-message" style="display:none;"></div>
+  <div id="login-error" class="error" aria-live="polite"></div>
 
-        <div class="form-group">
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email" autocomplete="email" required>
-        </div>
+  <section class="login-box" aria-label="Login form">
+    <form id="login-form" class="form" novalidate>
+      <label for="email">Email:</label>
+      <input id="email" name="email" type="email" required>
 
-        <div class="form-group">
-          <label for="password">Password:</label>
-          <input type="password" id="password" name="password" autocomplete="current-password" required>
-        </div>
+      <label for="password">Password:</label>
+      <input id="password" name="password" type="password" required>
 
-        <button type="submit" class="btn-submit">Login</button>
-      </form>
-    </section>
-  </main>
+      <button class="submit-button" type="submit">Login</button>
+    </form>
+  </section>
+</main>
 
-  <footer>
-    <p>All rights reserved.</p>
-  </footer>
+<footer>
+  © 2024 HBnB Evolution. All rights reserved.
+</footer>
+
+<script src="scripts.js"></script>
 </body>
 </html>

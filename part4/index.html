@@ -1,55 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Holberton HBNB - Places</title>
+  <title>HBnB - Places</title>
+  <link rel="icon" href="images/icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script src="scripts.js" defer></script>
 </head>
 <body>
-  <header>
-    <nav class="navbar">
-      <div class="nav-container">
-        <a href="index.html" aria-label="Home">
-          <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
-        </a>
 
-        <div class="nav-links">
-          <a href="index.html" class="nav-link active">Home</a>
+<header>
+  <div class="left">
+    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <a class="brand" href="index.html">hbnb</a>
+  </div>
+  <nav>
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="login-button" href="login.html">Login</a>
+  </nav>
+</header>
 
-          <span id="user-info" class="user-info" style="display: none;">
-            <span id="user-email"></span>
-            <button id="logout-btn" class="btn-logout" type="button">Logout</button>
-          </span>
+<main>
+  <h1 class="page-title">Available Places</h1>
 
-          <a href="login.html" id="login-link" class="login-button nav-link btn-login">Login</a>
-        </div>
-      </div>
-    </nav>
-  </header>
+  <div class="filter-bar">
+    <label for="max-price">Max Price:</label>
+    <select id="max-price" name="max-price">
+      <option>All</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="150">150</option>
+      <option value="200">200</option>
+      <option value="300">300</option>
+    </select>
+  </div>
 
-  <main class="container">
-    <section class="filters-section">
-      <h2>Filter Places</h2>
-      <div class="filter-group">
-        <label for="price-filter">Max price:</label>
-        <select id="price-filter">
-          <option value="">All Prices</option>
-          <option value="50">Under $50</option>
-          <option value="100">Under $100</option>
-          <option value="200">Under $200</option>
-        </select>
-      </div>
-    </section>
+  <section id="places-list" class="places-grid" aria-label="Places list"></section>
+</main>
 
-    <section id="places-list" class="places-grid" aria-live="polite">
-      <p class="loading">Loading places...</p>
-    </section>
-  </main>
+<footer>
+  © 2024 HBnB Evolution. All rights reserved.
+</footer>
 
-  <footer>
-    <p>All rights reserved.</p>
-  </footer>
+<script src="scripts.js"></script>
 </body>
 </html>

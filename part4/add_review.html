@@ -1,70 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Holberton HBNB - Add Review</title>
+  <title>HBnB - Add Review</title>
+  <link rel="icon" href="images/icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script src="scripts.js" defer></script>
 </head>
 <body>
-  <header>
-    <nav class="navbar">
-      <div class="nav-container">
-        <a href="index.html" aria-label="Home">
-          <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
-        </a>
 
-        <div class="nav-links">
-          <a href="index.html" class="nav-link">Home</a>
+<header>
+  <div class="left">
+    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <a class="brand" href="index.html">hbnb</a>
+  </div>
+  <nav>
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="login-button" href="login.html">Login</a>
+  </nav>
+</header>
 
-          <span id="user-info" class="user-info" style="display: none;">
-            <span id="user-email"></span>
-            <button id="logout-btn" class="btn-logout" type="button">Logout</button>
-          </span>
+<main class="place-details">
+  <h1 class="page-title" id="reviewing-title">Reviewing</h1>
 
-          <a href="login.html" id="login-link" class="login-button nav-link btn-login">Login</a>
-        </div>
-      </div>
-    </nav>
-  </header>
+  <section class="add-review">
+    <h2 class="section-title">Add a Review</h2>
 
-  <main class="container">
-    <section class="add-review">
-      <h1>Add a Review</h1>
+    <form id="add-review-form" class="form" novalidate>
+      <label for="review-text">Your Review:</label>
+      <textarea id="review-text" name="review-text" required></textarea>
 
-      <form id="add-review-form" class="form" action="#" method="post">
-        <div class="form-group">
-          <label for="place">Place Name:</label>
-          <input type="text" id="place" name="place" required>
-        </div>
+      <label for="review-rating">Rating:</label>
+      <select id="review-rating" name="review-rating" required>
+        <option value="1">1 Star</option>
+        <option value="2">2 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="5">5 Stars</option>
+      </select>
 
-        <div class="form-group">
-          <label for="review">Review:</label>
-          <textarea id="review" name="review" required></textarea>
-        </div>
+      <button class="submit-button" type="submit">Submit Review</button>
+    </form>
+  </section>
+</main>
 
-        <div class="form-group">
-          <label for="rating2">Rating:</label>
-          <select id="rating2" name="rating" required>
-            <option value="">Select rating</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
-        </div>
+<footer>
+  © 2024 HBnB Evolution. All rights reserved.
+</footer>
 
-        <button type="submit" class="btn-submit">Submit Review</button>
-      </form>
+<script src="scripts.js"></script>
+<script>
+  // عنوان الصفحة مثل الصورة: "Reviewing: <Place Title>"
+  (async () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (!id) return;
 
-      <p class="hint">This page is intended for authenticated users.</p>
-    </section>
-  </main>
-
-  <footer>
-    <p>All rights reserved.</p>
-  </footer>
+    const res = await fetch(`http://127.0.0.1:5000/api/v1/places/${encodeURIComponent(id)}`);
+    if (!res.ok) return;
+    const p = await res.json();
+    const title = p.title || p.name || "Place";
+    document.getElementById("reviewing-title").textContent = `Reviewing: ${title}`;
+  })();
+</script>
 </body>
 </html>

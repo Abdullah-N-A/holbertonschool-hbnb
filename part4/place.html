@@ -1,77 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Holberton HBNB - Place Details</title>
+  <title>HBnB - Place</title>
+  <link rel="icon" href="images/icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script src="scripts.js" defer></script>
 </head>
 <body>
-  <header>
-    <nav class="navbar">
-      <div class="nav-container">
-        <a href="index.html" aria-label="Home">
-          <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
-        </a>
 
-        <div class="nav-links">
-          <a href="index.html" class="nav-link">Home</a>
+<header>
+  <div class="left">
+    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <a class="brand" href="index.html">hbnb</a>
+  </div>
+  <nav>
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="login-button" href="login.html">Login</a>
+  </nav>
+</header>
 
-          <span id="user-info" class="user-info" style="display: none;">
-            <span id="user-email"></span>
-            <button id="logout-btn" class="btn-logout" type="button">Logout</button>
-          </span>
+<main class="place-details">
+  <h1 class="page-title" id="place-title">Place</h1>
 
-          <a href="login.html" id="login-link" class="login-button nav-link btn-login">Login</a>
-        </div>
-      </div>
-    </nav>
-  </header>
+  <section class="place-info" aria-label="Place information">
+    <div class="line">Host: <span id="place-host">N/A</span></div>
+    <div class="line"><b>Price per night:</b> $<span id="place-price">0</span></div>
+    <div class="line"><b>Description:</b> <span id="place-description"></span></div>
+    <div class="line"><b>Amenities:</b> <span id="place-amenities"></span></div>
+  </section>
 
-  <main class="container">
-    <section id="place-details" class="place-details" aria-live="polite">
-      <p class="loading">Loading place details...</p>
-    </section>
+  <h2 class="section-title">Reviews</h2>
+  <section id="reviews-wrap" aria-label="Reviews list"></section>
 
-    <section id="reviews" class="reviews-section">
-      <h2>Reviews</h2>
-      <div id="reviews-list" class="reviews-list"></div>
-    </section>
+  <!-- تظهر إذا مو مسجل -->
+  <div id="must-login-msg" class="add-review">
+    <div class="error">Login to add a review.</div>
+  </div>
 
-    <!-- UI فقط: يظهر/يختفي بالـ JS حسب تسجيل الدخول -->
-    <section id="add-review" class="add-review add-review-section" style="display:none;">
-      <h2>Add a Review</h2>
+  <!-- تظهر إذا مسجل -->
+  <section id="add-review-wrap" class="add-review" style="display:none;">
+    <h2 class="section-title">Add a Review</h2>
 
-      <form id="review-form" class="form review-form">
-        <div class="form-group">
-          <label for="review-text">Review:</label>
-          <textarea id="review-text" name="review-text" required></textarea>
-        </div>
+    <form id="review-form" class="form" novalidate>
+      <label for="review-text">Your Review:</label>
+      <textarea id="review-text" name="review-text" required></textarea>
 
-        <div class="form-group">
-          <label for="rating">Rating:</label>
-          <select id="rating" name="rating" required>
-            <option value="">Select rating</option>
-            <option value="1">⭐ 1 Star</option>
-            <option value="2">⭐⭐ 2 Stars</option>
-            <option value="3">⭐⭐⭐ 3 Stars</option>
-            <option value="4">⭐⭐⭐⭐ 4 Stars</option>
-            <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
-          </select>
-        </div>
+      <label for="review-rating">Rating:</label>
+      <select id="review-rating" name="review-rating" required>
+        <option value="1">1 Star</option>
+        <option value="2">2 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="5">5 Stars</option>
+      </select>
 
-        <button type="submit" class="btn-submit">Submit Review</button>
-      </form>
+      <button class="submit-button" type="submit">Submit Review</button>
+    </form>
 
-      <p class="hint">
-        Or go to <a href="add_review.html" class="details-button">add_review.html</a>
-      </p>
-    </section>
-  </main>
+    <!-- لو تبي صفحة منفصلة بدل الفورم -->
+    <div style="margin:10px 0; text-align:center;">
+      <a id="add-review-link" class="details-button" href="add_review.html">Open Add Review Page</a>
+    </div>
+  </section>
+</main>
 
-  <footer>
-    <p>All rights reserved.</p>
-  </footer>
+<footer>
+  © 2024 HBnB Evolution. All rights reserved.
+</footer>
+
+<script src="scripts.js"></script>
 </body>
 </html>
