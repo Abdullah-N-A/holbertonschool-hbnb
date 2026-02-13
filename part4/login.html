@@ -1,41 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holberton HBNB - Login</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="scripts.js" defer></script>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <h1 class="logo">Places & Reviews</h1>
-            </div>
-        </nav>
-    </header>
+  <header>
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" aria-label="Home">
+          <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
+        </a>
 
-    <main class="container">
-        <section class="auth-section">
-            <form id="login-form" class="auth-form">
-                <h2>Login</h2>
-                <div id="error-message" class="error-message" style="display: none;"></div>
-                
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                
-                <button type="submit" class="btn-submit">Login</button>
-            </form>
-        </section>
-    </main>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="login.html" class="login-button nav-link btn-login active">Login</a>
+        </div>
+      </div>
+    </nav>
+  </header>
 
-    <script src="scripts.js"></script>
+  <main class="container">
+    <section class="auth-section">
+      <form id="login-form" class="auth-form" novalidate>
+        <h2>Login</h2>
+
+        <div id="error-message" class="error-message" style="display:none;"></div>
+
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" autocomplete="email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Login</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>All rights reserved.</p>
+  </footer>
 </body>
 </html>

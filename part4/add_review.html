@@ -9,20 +9,62 @@
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" aria-label="Home">
+          <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
+        </a>
+
+        <div class="nav-links">
+          <a href="index.html" class="nav-link">Home</a>
+
+          <span id="user-info" class="user-info" style="display: none;">
+            <span id="user-email"></span>
+            <button id="logout-btn" class="btn-logout" type="button">Logout</button>
+          </span>
+
+          <a href="login.html" id="login-link" class="login-button nav-link btn-login">Login</a>
+        </div>
+      </div>
+    </nav>
   </header>
 
-  <main>
-    <h1>Add a Review</h1>
-    <form action="#" method="post">
-      <label>Place Name:
-        <input type="text" name="place">
-      </label>
-      <label>Review:
-        <textarea name="review"></textarea>
-      </label>
-      <button type="submit">Submit Review</button>
-    </form>
+  <main class="container">
+    <section class="add-review">
+      <h1>Add a Review</h1>
+
+      <form id="add-review-form" class="form" action="#" method="post">
+        <div class="form-group">
+          <label for="place">Place Name:</label>
+          <input type="text" id="place" name="place" required>
+        </div>
+
+        <div class="form-group">
+          <label for="review">Review:</label>
+          <textarea id="review" name="review" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="rating2">Rating:</label>
+          <select id="rating2" name="rating" required>
+            <option value="">Select rating</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-submit">Submit Review</button>
+      </form>
+
+      <p class="hint">This page is intended for authenticated users.</p>
+    </section>
   </main>
+
+  <footer>
+    <p>All rights reserved.</p>
+  </footer>
 </body>
 </html>

@@ -1,44 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Places & Reviews</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holberton HBNB - Places</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="scripts.js" defer></script>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-container">
-                <h1 class="logo">Places & Reviews</h1>
-                <div class="nav-links">
-                    <a href="index.html" class="nav-link active">Home</a>
-                    <span id="user-info" class="user-info" style="display: none;">
-                        <span id="user-email"></span>
-                        <button id="logout-btn" class="btn-logout">Logout</button>
-                    </span>
-                    <a href="login.html" id="login-link" class="nav-link btn-login">Login</a>
-                </div>
-            </div>
-        </nav>
-    </header>
+  <header>
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="index.html" aria-label="Home">
+          <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
+        </a>
 
-    <main class="container">
-        <section class="filters-section">
-            <h2>Filter Places</h2>
-            <select id="price-filter">
-                <option value="">All Prices</option>
-                <option value="50">Under $50</option>
-                <option value="100">Under $100</option>
-                <option value="200">Under $200</option>
-            </select>
-        </section>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link active">Home</a>
 
-        <section id="places-list" class="places-grid">
-            <p class="loading">Loading places...</p>
-        </section>
-    </main>
+          <span id="user-info" class="user-info" style="display: none;">
+            <span id="user-email"></span>
+            <button id="logout-btn" class="btn-logout" type="button">Logout</button>
+          </span>
 
-    <script src="scripts.js"></script>
+          <a href="login.html" id="login-link" class="login-button nav-link btn-login">Login</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="filters-section">
+      <h2>Filter Places</h2>
+      <div class="filter-group">
+        <label for="price-filter">Max price:</label>
+        <select id="price-filter">
+          <option value="">All Prices</option>
+          <option value="50">Under $50</option>
+          <option value="100">Under $100</option>
+          <option value="200">Under $200</option>
+        </select>
+      </div>
+    </section>
+
+    <section id="places-list" class="places-grid" aria-live="polite">
+      <p class="loading">Loading places...</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>All rights reserved.</p>
+  </footer>
 </body>
 </html>
