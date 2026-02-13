@@ -1,8 +1,9 @@
-const API_URL = "http://localhost:5000/api/v1";
+// ===== API ROOT (يشتغل على localhost أو sandbox) =====
+const API_ROOT = `${location.protocol}//${location.hostname}:5000/api/v1`;
 
 // ==================== AUTH ====================
 async function login(email, password) {
-  const response = await fetch(`${API_URL}/auth/login`, {
+  const response = await fetch(`${API_ROOT}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password })
@@ -25,7 +26,7 @@ async function getCurrentUser() {
   if (!token) return null;
 
   try {
-    const response = await fetch(`${API_URL}/auth/me`, {
+    const response = await fetch(`${API_ROOT}/auth/me`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
 
@@ -37,7 +38,7 @@ async function getCurrentUser() {
   }
 }
 
-// ==================== NAV UI ====================
+// ==================== NAV ====================
 function updateNavBar(user) {
   const loginLink = document.getElementById("login-link");
   const userInfo = document.getElementById("user-info");
@@ -62,7 +63,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const user = await getCurrentUser();
   updateNavBar(user);
 
-  // Show add-review section in place.html only when logged in
   const addReviewSection = document.getElementById("add-review");
   if (addReviewSection) addReviewSection.style.display = user ? "block" : "none";
 
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Home page: load places
+  // Home
   const placesList = document.getElementById("places-list");
   if (placesList) {
     loadPlaces();
@@ -95,166 +95,141 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (priceFilter) priceFilter.addEventListener("change", loadPlaces);
   }
 
-  // Place page: load details + reviews
+  // Place page
   const placeDetails = document.getElementById("place-details");
   if (placeDetails) {
     loadPlaceDetails();
     loadReviews();
   }
 
-  // Review form (inside place.html)
   const reviewForm = document.getElementById("review-form");
-  if (reviewForm) {
-    reviewForm.addEventListener("submit", submitReview);
-  }
-
-  // add_review.html form (UI only)
-  const addReviewForm = document.getElementById("add-review-form");
-  if (addReviewForm) {
-    addReviewForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      alert("UI only: reviews are submitted from place.html in this setup.");
-    });
-  }
+  if (reviewForm) reviewForm.addEventListener("submit", submitReview);
 });
 
-// ==================== DATA LOADERS ====================
+// ==================== LOAD PLACES ====================
 async function loadPlaces() {
   const token = localStorage.getItem("access_token");
   const priceFilter = document.getElementById("price-filter")?.value || "";
   const placesList = document.getElementById("places-list");
 
   try {
-    let url = `${API_URL}/places`;
-    if (priceFilter) url += `?max_price=${encodeURIComponent(priceFilter)}`;
+    let url = `${API_ROOT}/places/`; // 🔥 slash مهم
+    if (priceFilter) url += `?max_price=${priceFilter}`;
 
     const response = await fetch(url, {
       headers: token ? { "Authorization": `Bearer ${token}` } : {}
     });
 
     if (!response.ok) throw new Error("Failed to load places");
-    const places = await response.json();
 
-    if (!Array.isArray(places) || places.length === 0) {
-      placesList.innerHTML = "<p>No places found.</p>";
-      return;
-    }
+    const places = await response.json();
 
     placesList.innerHTML = places.map(place => `
       <article class="place-card">
-        <img src="${place.image_url || "placeholder.jpg"}" alt="${escapeHtml(place.name || "Place")}">
-        <h3>${escapeHtml(place.name || "Unnamed place")}</h3>
-        <p class="price">$${Number(place.price ?? 0)}</p>
-        <a href="place.html?id=${encodeURIComponent(place.id)}" class="details-button btn-view">View Details</a>
+        <img src="${place.image_url || "placeholder.jpg"}" alt="${place.name}">
+        <h3>${place.name}</h3>
+        <p class="price">$${place.price}</p>
+        <a href="place.html?id=${place.id}" class="details-button">View Details</a>
       </article>
     `).join("");
+
   } catch (error) {
+    console.error(error);
     placesList.innerHTML = "<p>Error loading places</p>";
   }
 }
 
+// ==================== PLACE DETAILS ====================
 async function loadPlaceDetails() {
   const placeId = new URLSearchParams(window.location.search).get("id");
   const token = localStorage.getItem("access_token");
   const placeDetails = document.getElementById("place-details");
 
   try {
-    const response = await fetch(`${API_URL}/places/${encodeURIComponent(placeId)}`, {
+    const response = await fetch(`${API_ROOT}/places/${placeId}/`, {
       headers: token ? { "Authorization": `Bearer ${token}` } : {}
     });
 
     if (!response.ok) throw new Error("Place not found");
+
     const place = await response.json();
 
-    const amenities = Array.isArray(place.amenities) ? place.amenities : [];
-    const hostName = place.host?.email || place.host?.name || "Unknown";
+    const amenities = place.amenities || [];
+    const host = place.host?.email || "Unknown";
 
     placeDetails.innerHTML = `
-      <h1>${escapeHtml(place.name || "Place")}</h1>
+      <h1>${place.name}</h1>
       <div class="place-info">
-        <p><strong>Host:</strong> ${escapeHtml(hostName)}</p>
-        <p><strong>Price per night:</strong> $${Number(place.price ?? 0)}</p>
-        <p><strong>Description:</strong> ${escapeHtml(place.description || "")}</p>
-        <div>
-          <strong>Amenities:</strong>
-          <ul>
-            ${amenities.map(a => `<li>${escapeHtml(a?.name ?? String(a))}</li>`).join("") || "<li>No amenities listed</li>"}
-          </ul>
-        </div>
+        <p><strong>Host:</strong> ${host}</p>
+        <p><strong>Price:</strong> $${place.price}</p>
+        <p>${place.description}</p>
+        <ul>
+          ${amenities.map(a => `<li>${a.name || a}</li>`).join("")}
+        </ul>
       </div>
     `;
+
   } catch (error) {
-    placeDetails.innerHTML = "<p>Error loading place details</p>";
+    console.error(error);
+    placeDetails.innerHTML = "<p>Error loading place</p>";
   }
 }
 
+// ==================== REVIEWS ====================
 async function loadReviews() {
   const placeId = new URLSearchParams(window.location.search).get("id");
   const token = localStorage.getItem("access_token");
   const reviewsList = document.getElementById("reviews-list");
 
   try {
-    const response = await fetch(`${API_URL}/places/${encodeURIComponent(placeId)}/reviews`, {
+    const response = await fetch(`${API_ROOT}/places/${placeId}/reviews/`, {
       headers: token ? { "Authorization": `Bearer ${token}` } : {}
     });
 
-    if (!response.ok) throw new Error("Failed to load reviews");
+    if (!response.ok) throw new Error("Failed");
+
     const reviews = await response.json();
 
-    if (!Array.isArray(reviews) || reviews.length === 0) {
-      reviewsList.innerHTML = "<p>No reviews yet</p>";
-      return;
-    }
-
-    reviewsList.innerHTML = reviews.map(review => `
-      <article class="review-card review-item">
-        <p class="rating">${"⭐".repeat(Number(review.rating ?? 0))}</p>
-        <p class="text">${escapeHtml(review.text || "")}</p>
-        <p class="author">- ${escapeHtml(review.user?.email || review.user?.name || "Anonymous")}</p>
+    reviewsList.innerHTML = reviews.map(r => `
+      <article class="review-card">
+        <p>${"⭐".repeat(r.rating)}</p>
+        <p>${r.text}</p>
+        <small>${r.user.email}</small>
       </article>
     `).join("");
+
   } catch (error) {
+    console.error(error);
     reviewsList.innerHTML = "<p>No reviews yet</p>";
   }
 }
 
+// ==================== SUBMIT REVIEW ====================
 async function submitReview(e) {
   e.preventDefault();
+
   const placeId = new URLSearchParams(window.location.search).get("id");
   const token = localStorage.getItem("access_token");
-  const reviewText = document.getElementById("review-text").value.trim();
-  const rating = Number(document.getElementById("rating").value);
 
-  if (!token) {
-    alert("Please login to add a review");
-    return;
-  }
+  const text = document.getElementById("review-text").value;
+  const rating = document.getElementById("rating").value;
 
   try {
-    const response = await fetch(`${API_URL}/places/${encodeURIComponent(placeId)}/reviews`, {
+    const response = await fetch(`${API_ROOT}/places/${placeId}/reviews/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ text: reviewText, rating })
+      body: JSON.stringify({ text, rating })
     });
 
-    if (!response.ok) throw new Error("Failed to submit review");
+    if (!response.ok) throw new Error("Submit failed");
 
-    document.getElementById("review-form").reset();
     loadReviews();
-  } catch (error) {
-    alert("Failed to submit review");
-  }
-}
+    document.getElementById("review-form").reset();
 
-// Small helper to avoid HTML injection
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+  } catch (error) {
+    alert("Error submitting review");
+  }
 }
