@@ -203,14 +203,17 @@ async function loadPlaceDetails() {
   const description = p.description ?? "";
   const amenities = p.amenities ?? p.amenity_names ?? [];
   const host =
-    p.host_name ??
-    p.owner_name ??
-    p.owner ??
+  p.host_name ??
+  p.owner_name ??
+  p.owner ??
+  (
     (p.user && typeof p.user === "object"
       ? `${p.user.first_name ?? ""} ${p.user.last_name ?? ""}`.trim()
       : "") ||
     p.user_id ||
-    "N/A";
+    "N/A"
+  );
+
 
   if (titleEl) titleEl.textContent = title;
   if (hostEl) hostEl.textContent = host;
@@ -263,16 +266,14 @@ async function loadReviews(placeId) {
       : "";
 
     const user =
-      r.user_name ??
-      r.username ??
-      r.userName ??
-      r.name ??
-      r.author_name ??
-      fullNameFromObj ||
-      (typeof r.user === "string" ? r.user : null) ||
-      r.user_id ||
-      r.userId ||
-      "Unknown";
+  r.user_name ??
+  r.username ??
+  (r.userName ?? 
+    (fullNameFromObj ||
+     (typeof r.user === "string" ? r.user : null) ||
+     r.user_id ||
+     "Unknown"));
+
 
     const text = r.text ?? r.comment ?? "";
     const rating = r.rating ?? 0;
