@@ -1,8 +1,6 @@
 // ===== API ROOT (يشتغل على localhost أو sandbox) =====
 const API_ROOT = `${location.protocol}//${location.hostname}:5000/api/v1`;
 
-
-
 // ==================== AUTH ====================
 async function login(email, password) {
   const response = await fetch(`${API_ROOT}/auth/login`, {
@@ -65,6 +63,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const user = await getCurrentUser();
   updateNavBar(user);
 
+  // hide add review section if not logged in
   const addReviewSection = document.getElementById("add-review");
   if (addReviewSection) addReviewSection.style.display = user ? "block" : "none";
 
@@ -115,22 +114,26 @@ async function loadPlaces() {
   const placesList = document.getElementById("places-list");
 
   try {
-    let url = `${API_ROOT}/places/`; // 🔥 slash مهم
-    if (priceFilter) url += `?max_price=${priceFilter}`;
+    let url = `${API_ROOT}/places/`; // عندك Route "/"
+    if (priceFilter) url += `?max_price=${encodeURIComponent(priceFilter)}`;
 
     const response = await fetch(url, {
       headers: token ? { "Authorization": `Bearer ${token}` } : {}
     });
 
     if (!response.ok) throw new Error("Failed to load places");
-
     const places = await response.json();
+
+    if (!Array.isArray(places) || places.length === 0) {
+      placesList.innerHTML = `<p class="loading">No places found.</p>`;
+      return;
+    }
 
     placesList.innerHTML = places.map(place => `
       <article class="place-card">
         <img src="${place.image_url || "placeholder.jpg"}" alt="${place.name}">
         <h3>${place.name}</h3>
-        <p class="price">$${place.price}</p>
+        <p class="price">$${place.price_per_night}</p>
         <a href="place.html?id=${place.id}" class="details-button">View Details</a>
       </article>
     `).join("");
@@ -147,24 +150,31 @@ async function loadPlaceDetails() {
   const token = localStorage.getItem("access_token");
   const placeDetails = document.getElementById("place-details");
 
+  if (!placeId) {
+    placeDetails.innerHTML = "<p>Missing place id</p>";
+    return;
+  }
+
   try {
-    const response = await fetch(`${API_ROOT}/places/${placeId}/`, {
+    const response = await fetch(`${API_ROOT}/places/${placeId}`, {
       headers: token ? { "Authorization": `Bearer ${token}` } : {}
     });
 
     if (!response.ok) throw new Error("Place not found");
-
     const place = await response.json();
 
     const amenities = place.amenities || [];
-    const host = place.host?.email || "Unknown";
+    const ownerText = place.owner_id ? place.owner_id : "Unknown";
 
     placeDetails.innerHTML = `
       <h1>${place.name}</h1>
+
       <div class="place-info">
-        <p><strong>Host:</strong> ${host}</p>
-        <p><strong>Price:</strong> $${place.price}</p>
-        <p>${place.description}</p>
+        <p><strong>Host:</strong> ${ownerText}</p>
+        <p><strong>Price:</strong> $${place.price_per_night}</p>
+        <p>${place.description || ""}</p>
+
+        <h3>Amenities</h3>
         <ul>
           ${amenities.map(a => `<li>${a.name || a}</li>`).join("")}
         </ul>
@@ -183,8 +193,10 @@ async function loadReviews() {
   const token = localStorage.getItem("access_token");
   const reviewsList = document.getElementById("reviews-list");
 
+  if (!reviewsList || !placeId) return;
+
   try {
-    const response = await fetch(`${API_ROOT}/places/${placeId}/reviews/`, {
+    const response = await fetch(`${API_ROOT}/places/${placeId}/reviews`, {
       headers: token ? { "Authorization": `Bearer ${token}` } : {}
     });
 
@@ -192,11 +204,16 @@ async function loadReviews() {
 
     const reviews = await response.json();
 
+    if (!Array.isArray(reviews) || reviews.length === 0) {
+      reviewsList.innerHTML = "<p>No reviews yet</p>";
+      return;
+    }
+
     reviewsList.innerHTML = reviews.map(r => `
       <article class="review-card">
-        <p>${"⭐".repeat(r.rating)}</p>
-        <p>${r.text}</p>
-        <small>${r.user.email}</small>
+        <p>${"⭐".repeat(Number(r.rating || 0))}</p>
+        <p>${r.text || ""}</p>
+        <small>User: ${r.user_id || "Unknown"}</small>
       </article>
     `).join("");
 
@@ -213,25 +230,32 @@ async function submitReview(e) {
   const placeId = new URLSearchParams(window.location.search).get("id");
   const token = localStorage.getItem("access_token");
 
-  const text = document.getElementById("review-text").value;
+  const text = document.getElementById("review-text").value.trim();
   const rating = document.getElementById("rating").value;
 
+  if (!token) {
+    alert("Please login to add a review");
+    return;
+  }
+
   try {
-    const response = await fetch(`${API_ROOT}/places/${placeId}/reviews/`, {
+    const response = await fetch(`${API_ROOT}/places/${placeId}/reviews`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ text, rating })
+      body: JSON.stringify({ text, rating: Number(rating) })
     });
 
-    if (!response.ok) throw new Error("Submit failed");
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Submit failed");
 
     loadReviews();
     document.getElementById("review-form").reset();
 
   } catch (error) {
+    console.error(error);
     alert("Error submitting review");
   }
 }
