@@ -1,26 +1,26 @@
-/* ===== HBnB Part 4 - scripts.js (API: Flask RESTX + JWT) ===== */
+/* ===== HBnB Part 4 - scripts.js (Flask RESTX + JWT) ===== */
 
 const API_ROOT = "http://127.0.0.1:5000/api/v1";
 
-function getToken() {
-  return localStorage.getItem("token");
-}
-function setToken(t) {
-  localStorage.setItem("token", t);
-}
-function clearToken() {
-  localStorage.removeItem("token");
-}
+/* ========= Storage ========= */
+function getToken() { return localStorage.getItem("token"); }
+function setToken(t) { localStorage.setItem("token", t); }
+function clearToken() { localStorage.removeItem("token"); }
 
-function qs(id) {
-  return document.getElementById(id);
-}
-
+/* ========= Helpers ========= */
+function qs(id) { return document.getElementById(id); }
 function getPlaceIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get("id");
 }
-
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 function stars(rating) {
   const r = Number(rating) || 0;
   const full = "★".repeat(Math.max(0, Math.min(5, r)));
@@ -28,26 +28,40 @@ function stars(rating) {
   return full + empty;
 }
 
+/* ========= API Fetch (robust) ========= */
 async function apiFetch(path, options = {}) {
-  const url = `${API_ROOT}${path}`;
-  const headers = options.headers ? { ...options.headers } : {};
+  const p = path.startsWith("/") ? path : `/${path}`;
+  const url = `${API_ROOT}${p}`;
 
-  // JSON by default if body exists
-  if (options.body && !headers["Content-Type"]) {
-    headers["Content-Type"] = "application/json";
+  const headers = new Headers(options.headers || {});
+  headers.set("Accept", "application/json");
+
+  if (options.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
-  // Add JWT if exists
   const token = getToken();
-  if (token && !headers.Authorization) {
-    headers.Authorization = `Bearer ${token}`;
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const res = await fetch(url, { ...options, headers });
+  let res;
+  try {
+    res = await fetch(url, { ...options, headers });
+  } catch (err) {
+    console.error("FETCH FAILED:", url, err);
+    throw err;
+  }
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    console.error("API ERROR:", res.status, res.statusText, url, txt);
+  }
+
   return res;
 }
 
-/* ========= Header login button (show Login/Logout) ========= */
+/* ========= Header login button (Login/Logout) ========= */
 function updateLoginButton() {
   const btn = document.querySelector(".login-button");
   if (!btn) return;
@@ -55,14 +69,16 @@ function updateLoginButton() {
   if (getToken()) {
     btn.textContent = "Logout";
     btn.href = "#";
-    btn.addEventListener("click", (e) => {
+    // منع تكرار listener لو الصفحة تعيد تحميل scripts
+    btn.onclick = (e) => {
       e.preventDefault();
       clearToken();
       window.location.href = "index.html";
-    });
+    };
   } else {
     btn.textContent = "Login";
     btn.href = "login.html";
+    btn.onclick = null;
   }
 }
 
@@ -70,8 +86,14 @@ function updateLoginButton() {
 async function handleLoginSubmit(e) {
   e.preventDefault();
 
-  const email = qs("email").value.trim();
-  const password = qs("password").value;
+  const emailEl = qs("email");
+  const passEl = qs("password");
+  const errEl = qs("login-error");
+
+  const email = emailEl ? emailEl.value.trim() : "";
+  const password = passEl ? passEl.value : "";
+
+  if (errEl) errEl.textContent = "";
 
   const res = await apiFetch("/auth/login", {
     method: "POST",
@@ -79,15 +101,13 @@ async function handleLoginSubmit(e) {
   });
 
   if (!res.ok) {
-    const err = qs("login-error");
-    if (err) err.textContent = "Login failed (email/password).";
+    if (errEl) errEl.textContent = "Login failed (email/password).";
     return;
   }
 
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!data.access_token) {
-    const err = qs("login-error");
-    if (err) err.textContent = "Login failed (no token returned).";
+    if (errEl) errEl.textContent = "Login failed (no token returned).";
     return;
   }
 
@@ -107,7 +127,7 @@ function renderPlaces(list) {
   list.forEach((p) => {
     const title = p.title ?? p.name ?? "Untitled";
     const price = p.price_per_night ?? p.price ?? p.pricePerNight ?? "N/A";
-    const id = p.id ?? p.place_id;
+    const id = p.id ?? p.place_id ?? p.placeId;
 
     const card = document.createElement("div");
     card.className = "place-card";
@@ -137,20 +157,25 @@ async function loadPlaces() {
   const container = qs("places-list");
   if (!container) return;
 
-  const res = await apiFetch("/places/", { method: "GET" });
+  // Try /places/ then /places
+  let res = await apiFetch("/places/", { method: "GET" });
+  if (res.status === 404 || res.status === 405) {
+    res = await apiFetch("/places", { method: "GET" });
+  }
+
   if (!res.ok) {
     container.innerHTML = `<div class="error">Failed to load places.</div>`;
     return;
   }
 
-  const data = await res.json();
+  const data = await res.json().catch(() => []);
   cachedPlaces = Array.isArray(data) ? data : (data.places || []);
 
   renderPlaces(cachedPlaces);
 
   const select = qs("max-price");
   if (select) {
-    select.addEventListener("change", () => applyMaxPriceFilter(select.value));
+    select.onchange = () => applyMaxPriceFilter(select.value);
   }
 }
 
@@ -171,7 +196,7 @@ async function loadPlaceDetails() {
     return;
   }
 
-  const p = await res.json();
+  const p = await res.json().catch(() => ({}));
 
   const title = p.title ?? p.name ?? "Untitled";
   const price = p.price_per_night ?? p.price ?? p.pricePerNight ?? "N/A";
@@ -181,7 +206,10 @@ async function loadPlaceDetails() {
     p.host_name ??
     p.owner_name ??
     p.owner ??
-    (p.user ? `${p.user.first_name ?? ""} ${p.user.last_name ?? ""}`.trim() : "") ||
+    (p.user && typeof p.user === "object"
+      ? `${p.user.first_name ?? ""} ${p.user.last_name ?? ""}`.trim()
+      : "") ||
+    p.user_id ||
     "N/A";
 
   if (titleEl) titleEl.textContent = title;
@@ -203,13 +231,18 @@ async function loadReviews(placeId) {
   const wrap = qs("reviews-wrap");
   if (!wrap) return;
 
-  const res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, { method: "GET" });
+  // Try /reviews then /reviews/
+  let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, { method: "GET" });
+  if (res.status === 404 || res.status === 405) {
+    res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, { method: "GET" });
+  }
+
   if (!res.ok) {
     wrap.innerHTML = `<div class="error">Failed to load reviews.</div>`;
     return;
   }
 
-  const reviews = await res.json();
+  const reviews = await res.json().catch(() => []);
   const list = Array.isArray(reviews) ? reviews : (reviews.reviews || []);
 
   wrap.innerHTML = "";
@@ -220,11 +253,25 @@ async function loadReviews(placeId) {
   }
 
   list.forEach((r) => {
+    const userObj =
+      (r && typeof r.user === "object" && r.user) ? r.user :
+      (r && typeof r.author === "object" && r.author) ? r.author :
+      null;
+
+    const fullNameFromObj = userObj
+      ? `${userObj.first_name ?? userObj.firstName ?? ""} ${userObj.last_name ?? userObj.lastName ?? ""}`.trim()
+      : "";
+
     const user =
       r.user_name ??
       r.username ??
-      (r.user ? `${r.user.first_name ?? ""} ${r.user.last_name ?? ""}`.trim() : "") ||
+      r.userName ??
+      r.name ??
+      r.author_name ??
+      fullNameFromObj ||
+      (typeof r.user === "string" ? r.user : null) ||
       r.user_id ||
+      r.userId ||
       "Unknown";
 
     const text = r.text ?? r.comment ?? "";
@@ -251,43 +298,52 @@ function updateAddReviewVisibility(placeId) {
   if (addWrap) addWrap.style.display = loggedIn ? "block" : "none";
   if (mustLoginMsg) mustLoginMsg.style.display = loggedIn ? "none" : "block";
 
-  // if you want a separate page: add_review.html
   if (addLink) addLink.href = `add_review.html?id=${encodeURIComponent(placeId)}`;
 }
 
+async function postReview(placeId, payload) {
+  // Try POST /reviews then /reviews/
+  let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  if (res.status === 404 || res.status === 405) {
+    res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  }
+  return res;
+}
+
 async function handleReviewSubmit(e) {
-  e.preventDefault(); // ✅ يمنع 501 (form submit إلى السيرفر static)
+  e.preventDefault(); // ✅ يمنع 501
 
   const placeId = getPlaceIdFromUrl();
   if (!placeId) return;
 
-  const text = qs("review-text").value.trim();
-  const rating = Number(qs("review-rating").value);
+  const textEl = qs("review-text");
+  const ratingEl = qs("review-rating");
+  const text = textEl ? textEl.value.trim() : "";
+  const rating = ratingEl ? Number(ratingEl.value) : 1;
 
   if (!text) return;
 
-  // حاول بدون slash أولاً (هذا اللي نبيه)
-  let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, {
-    method: "POST",
-    body: JSON.stringify({ text, rating })
-  });
-
-  // لو 405 بسبب routing عندك (trailing slash) جرّب fallback مرة وحدة
-  if (res.status === 405) {
-    res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, {
-      method: "POST",
-      body: JSON.stringify({ text, rating })
-    });
+  if (!getToken()) {
+    alert("Login first.");
+    return;
   }
+
+  const res = await postReview(placeId, { text, rating });
 
   if (!res.ok) {
     alert("Failed to submit review.");
     return;
   }
 
-  // reload reviews
-  qs("review-text").value = "";
-  qs("review-rating").value = "1";
+  if (textEl) textEl.value = "";
+  if (ratingEl) ratingEl.value = "1";
   await loadReviews(placeId);
 }
 
@@ -298,20 +354,19 @@ async function handleAddReviewPageSubmit(e) {
   const placeId = getPlaceIdFromUrl();
   if (!placeId) return;
 
-  const text = qs("review-text").value.trim();
-  const rating = Number(qs("review-rating").value);
+  const textEl = qs("review-text");
+  const ratingEl = qs("review-rating");
+  const text = textEl ? textEl.value.trim() : "";
+  const rating = ratingEl ? Number(ratingEl.value) : 1;
 
-  let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, {
-    method: "POST",
-    body: JSON.stringify({ text, rating })
-  });
+  if (!text) return;
 
-  if (res.status === 405) {
-    res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, {
-      method: "POST",
-      body: JSON.stringify({ text, rating })
-    });
+  if (!getToken()) {
+    alert("Login first.");
+    return;
   }
+
+  const res = await postReview(placeId, { text, rating });
 
   if (!res.ok) {
     alert("Failed to submit review.");
@@ -319,16 +374,6 @@ async function handleAddReviewPageSubmit(e) {
   }
 
   window.location.href = `place.html?id=${encodeURIComponent(placeId)}`;
-}
-
-/* ========= Utils ========= */
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
 }
 
 /* ========= Boot ========= */
