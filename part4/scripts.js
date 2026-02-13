@@ -1,5 +1,6 @@
 // ===== API ROOT (يشتغل على localhost أو sandbox) =====
-const API_ROOT = `${location.protocol}//${location.hostname}:5000/api/v1`;
+const API_ROOT = `${location.protocol}//${location.host}/api/v1`;
+
 
 // ==================== AUTH ====================
 async function login(email, password) {
