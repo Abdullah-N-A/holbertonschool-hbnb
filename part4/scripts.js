@@ -1,40 +1,53 @@
-// scripts.js
+/*
+  Login functionality for Holberton HBNB project
+  Handles authentication using Fetch API
+  Stores JWT token in cookies
+*/
 
-// ----------- Welcome message when the page loads -----------
-window.addEventListener('load', function() {
-    console.log("Welcome to Holberton HBNB!");
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get form values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                await loginUser(email, password);
+            } catch (error) {
+                alert('An error occurred: ' + error.message);
+            }
+        });
+    }
 });
 
-// ----------- Hover effect on the login button -----------
-const loginBtn = document.querySelector('.login-button');
-if (loginBtn) {
-    loginBtn.addEventListener('mouseover', () => {
-        loginBtn.style.backgroundColor = '#2980b9'; // Darker blue on hover
-    });
-    loginBtn.addEventListener('mouseout', () => {
-        loginBtn.style.backgroundColor = '#3498db'; // Original color
-    });
-}
+/*
+  Function to send login request to API
+*/
+async function loginUser(email, password) {
 
-// ----------- Alert when clicking "View Details" buttons -----------
-const detailsBtns = document.querySelectorAll('.details-button');
-detailsBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        alert("Redirecting to place details...");
+    const response = await fetch('https://your-api-url/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
     });
-});
 
-// ----------- Form validation example for login form -----------
-const loginForm = document.querySelector('form');
-if (loginForm && loginForm.querySelector('input[name="email"]') && loginForm.querySelector('input[name="password"]')) {
-    loginForm.addEventListener('submit', (e) => {
-        const email = loginForm.querySelector('input[name="email"]').value;
-        const password = loginForm.querySelector('input[name="password"]').value;
+    if (response.ok) {
+        const data = await response.json();
 
-        // Prevent submission if email or password is empty
-        if (email.trim() === '' || password.trim() === '') {
-            e.preventDefault(); // Stop the form from submitting
-            alert("Please fill in both email and password!");
-        }
-    });
+        // Store JWT token in cookie
+        document.cookie = `token=${data.access_token}; path=/`;
+
+        // Redirect to main page
+        window.location.href = 'index.html';
+
+    } else {
+        const errorText = await response.text();
+        alert('Login failed: ' + errorText);
+    }
 }

@@ -14,14 +14,23 @@
 
   <main>
     <h1>Login</h1>
-    <form action="#" method="post">
-      <label>Email:
-        <input type="email" name="email">
-      </label>
-      <label>Password:
-        <input type="password" name="password">
-      </label>
+
+    <!-- Error message container -->
+    <p id="error-message" style="color: red;"></p>
+
+    <!-- IMPORTANT: Added id="login-form" -->
+    <form id="login-form">
+      
+      <label for="email">Email:</label>
+      <!-- Added id + required -->
+      <input type="email" id="email" name="email" required>
+
+      <label for="password">Password:</label>
+      <!-- Added id + required -->
+      <input type="password" id="password" name="password" required>
+
       <button type="submit">Login</button>
+
     </form>
   </main>
 </body>
