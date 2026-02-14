@@ -8,7 +8,6 @@ from app.models.review import Review
 app = create_app()
 
 
-# ---------- helpers ----------
 def set_password(user, plain):
     # supports set_password() OR hash_password()
     if hasattr(user, "set_password"):
@@ -19,11 +18,19 @@ def set_password(user, plain):
         raise RuntimeError("User model has no set_password/hash_password method")
 
 
-def set_attr_if_exists(obj, attr, value):
-    if hasattr(obj, attr):
-        setattr(obj, attr, value)
-        return True
-    return False
+def reset_db():
+    # wipe tables (order matters)
+    Review.query.delete()
+    db.session.commit()
+
+    Place.query.delete()
+    db.session.commit()
+
+    Amenity.query.delete()
+    db.session.commit()
+
+    User.query.delete()
+    db.session.commit()
 
 
 def get_or_create_user(email, first_name, last_name, password, is_admin=False, fixed_id=None):
@@ -31,263 +38,142 @@ def get_or_create_user(email, first_name, last_name, password, is_admin=False, f
     if u:
         return u
 
-    kwargs = {}
-    if fixed_id and hasattr(User, "id"):
-        kwargs["id"] = fixed_id
+    kwargs = {
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+        "is_admin": is_admin,
+    }
 
-    u = User(
-        first_name=first_name,
-        last_name=last_name,
-        email=email,
-        is_admin=is_admin,
-        **kwargs
-    )
+    # set fixed UUID if your User model allows it
+    if fixed_id is not None:
+        try:
+            kwargs["id"] = fixed_id
+        except Exception:
+            pass
+
+    u = User(**kwargs)
     set_password(u, password)
     db.session.add(u)
     db.session.commit()
     return u
 
 
-def get_or_create_amenity(aid, name):
-    a = Amenity.query.get(aid) if hasattr(Amenity, "query") else None
-    if a:
-        return a
+def create_amenity(aid, name):
+    # SQLAlchemy 2.x friendly:
+    existing = db.session.get(Amenity, aid)
+    if existing:
+        return existing
 
-    # if your Amenity model doesn't use string id, it will ignore 'id' safely
-    kwargs = {}
-    if hasattr(Amenity, "id"):
-        kwargs["id"] = aid
-
-    a = Amenity(name=name, **kwargs)
+    a = Amenity(id=aid, name=name)
     db.session.add(a)
     db.session.commit()
     return a
 
 
-def wipe_db():
-    # order matters بسبب FK
-    try:
-        Review.query.delete()
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-    try:
-        # if you have association table, it will be handled by cascade, otherwise ignore
-        Place.query.delete()
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-    try:
-        Amenity.query.delete()
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-    try:
-        User.query.delete()
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-
-def create_place(data, owner, amenities_objs):
-    p = Place()
-
-    # name/title
-    if not set_attr_if_exists(p, "name", data["name"]):
-        set_attr_if_exists(p, "title", data["name"])
-
-    # description
-    set_attr_if_exists(p, "description", data.get("description", ""))
-
-    # price
-    set_attr_if_exists(p, "price_per_night", data["price_per_night"])
-
-    # location fields (optional)
-    set_attr_if_exists(p, "city", data.get("city", ""))
-    set_attr_if_exists(p, "country", data.get("country", ""))  # only if exists
-    set_attr_if_exists(p, "latitude", data.get("latitude"))
-    set_attr_if_exists(p, "longitude", data.get("longitude"))
-
-    # owner/user id fields (different projects name it differently)
-    if not set_attr_if_exists(p, "owner_id", owner.id):
-        set_attr_if_exists(p, "user_id", owner.id)
-
-    db.session.add(p)
-    db.session.flush()  # get p.id
-
-    # attach amenities if relationship exists
-    if hasattr(p, "amenities") and data.get("amenities"):
-        for a in amenities_objs:
-            if a.name in data["amenities"]:
-                p.amenities.append(a)
-
-    db.session.commit()
-    return p
-
-
-def create_review(place, user, text, rating):
-    r = Review()
-    set_attr_if_exists(r, "text", text)
-    set_attr_if_exists(r, "rating", rating)
-
-    # link ids
-    if hasattr(r, "place_id"):
-        r.place_id = place.id
-    if hasattr(r, "user_id"):
-        r.user_id = user.id
-
-    db.session.add(r)
-    db.session.commit()
-    return r
-
-
-# ---------- seed data (matches screenshots) ----------
-DATA = {
-    "amenities": [
-        ("a1b2c3d4-1111-2222-3333-444455556666", "WiFi"),
-        ("b2c3d4e5-2222-3333-4444-555566667777", "Pool"),
-        ("c3d4e5f6-3333-4444-5555-666677778888", "Air Conditioning"),
-    ],
-    "users": {
-        "admin": {
-            "id": "36c9050e-ddd3-4c3b-9731-9f487208bbc1",
-            "first_name": "Admin",
-            "last_name": "HBnB",
-            "email": "admin@hbnb.io",
-            "password": "admin1234",
-            "is_admin": True
-        },
-        "owner": {
-            "first_name": "John",
-            "last_name": "Doe",
-            "email": "owner@hbnb.io",
-            "password": "owner1234",
-            "is_admin": False
-        },
-        "jane": {
-            "first_name": "Jane",
-            "last_name": "Smith",
-            "email": "jane@hbnb.io",
-            "password": "jane1234",
-            "is_admin": False
-        },
-        "robert": {
-            "first_name": "Robert",
-            "last_name": "Brown",
-            "email": "robert@hbnb.io",
-            "password": "robert1234",
-            "is_admin": False
-        },
-    },
-    "places": [
-        {
-            "name": "Beautiful Beach House",
-            "price_per_night": 150,
-            "description": "A beautiful beach house with amazing views...",
-            "amenities": ["WiFi", "Pool", "Air Conditioning"],
-            # optional fields (only if your model has them)
-            "city": "",
-            "country": "",
-            "latitude": None,
-            "longitude": None,
-        },
-        {
-            "name": "Cozy Cabin",
-            "price_per_night": 100,
-            "description": "",
-            "amenities": [],
-            "city": "",
-            "country": "",
-            "latitude": None,
-            "longitude": None,
-        },
-        {
-            "name": "Modern Apartment",
-            "price_per_night": 200,
-            "description": "",
-            "amenities": [],
-            "city": "",
-            "country": "",
-            "latitude": None,
-            "longitude": None,
-        },
-    ],
-    "reviews": [
-        {
-            "place_name": "Beautiful Beach House",
-            "user_key": "jane",
-            "text": "Great place to stay!",
-            "rating": 4
-        },
-        {
-            "place_name": "Beautiful Beach House",
-            "user_key": "robert",
-            "text": "Amazing location and very comfortable.",
-            "rating": 5
-        }
-    ]
-}
-
-
 def main():
     with app.app_context():
-        # wipe everything
-        wipe_db()
+        # 0) wipe
+        reset_db()
 
-        # users
+        # 1) users (match screenshots)
         admin = get_or_create_user(
-            email=DATA["users"]["admin"]["email"],
-            first_name=DATA["users"]["admin"]["first_name"],
-            last_name=DATA["users"]["admin"]["last_name"],
-            password=DATA["users"]["admin"]["password"],
+            email="admin@hbnb.io",
+            first_name="Admin",
+            last_name="HBnB",
+            password="admin1234",
             is_admin=True,
-            fixed_id=DATA["users"]["admin"]["id"],
+            fixed_id="36c9050e-ddd3-4c3b-9731-9f487208bbc1"
         )
+
         owner = get_or_create_user(
-            email=DATA["users"]["owner"]["email"],
-            first_name=DATA["users"]["owner"]["first_name"],
-            last_name=DATA["users"]["owner"]["last_name"],
-            password=DATA["users"]["owner"]["password"],
-            is_admin=False,
+            email="owner@hbnb.io",
+            first_name="John",
+            last_name="Doe",
+            password="owner1234",
+            is_admin=False
         )
+
         jane = get_or_create_user(
-            email=DATA["users"]["jane"]["email"],
-            first_name=DATA["users"]["jane"]["first_name"],
-            last_name=DATA["users"]["jane"]["last_name"],
-            password=DATA["users"]["jane"]["password"],
-            is_admin=False,
+            email="jane@hbnb.io",
+            first_name="Jane",
+            last_name="Smith",
+            password="jane1234",
+            is_admin=False
         )
+
         robert = get_or_create_user(
-            email=DATA["users"]["robert"]["email"],
-            first_name=DATA["users"]["robert"]["first_name"],
-            last_name=DATA["users"]["robert"]["last_name"],
-            password=DATA["users"]["robert"]["password"],
-            is_admin=False,
+            email="robert@hbnb.io",
+            first_name="Robert",
+            last_name="Brown",
+            password="robert1234",
+            is_admin=False
         )
 
-        # amenities
-        amenity_objs = []
-        for aid, name in DATA["amenities"]:
-            amenity_objs.append(get_or_create_amenity(aid, name))
+        # 2) amenities (match screenshots)
+        wifi = create_amenity("a1b2c3d4-1111-2222-3333-444455556666", "WiFi")
+        pool = create_amenity("b2c3d4e5-2222-3333-4444-555566667777", "Pool")
+        ac   = create_amenity("c3d4e5f6-3333-4444-5555-666677778888", "Air Conditioning")
 
-        # places
-        place_by_name = {}
-        for p in DATA["places"]:
-            place = create_place(p, owner=owner, amenities_objs=amenity_objs)
-            place_by_name[p["name"]] = place
+        # 3) places (MATCH EXACT NAMES + PRICES + DESCRIPTIONS)
+        # Place __init__ requires: name, description, city, price_per_night, latitude, longitude
+        # and you have owner_id (from your earlier seed)
+        beach = Place(
+            name="Beautiful Beach House",
+            description="A beautiful beach house with amazing views...",
+            city="",
+            price_per_night=150,
+            latitude=0.0,
+            longitude=0.0,
+            owner_id=owner.id
+        )
 
-        # reviews
-        user_map = {"jane": jane, "robert": robert, "admin": admin, "owner": owner}
-        for r in DATA["reviews"]:
-            place = place_by_name.get(r["place_name"])
-            user = user_map.get(r["user_key"])
-            if place and user:
-                create_review(place, user, r["text"], r["rating"])
+        cabin = Place(
+            name="Cozy Cabin",
+            description="",
+            city="",
+            price_per_night=100,
+            latitude=0.0,
+            longitude=0.0,
+            owner_id=owner.id
+        )
 
-    print("✅ Database wiped + seeded to match screenshots successfully.")
+        apt = Place(
+            name="Modern Apartment",
+            description="",
+            city="",
+            price_per_night=200,
+            latitude=0.0,
+            longitude=0.0,
+            owner_id=owner.id
+        )
+
+        db.session.add_all([beach, cabin, apt])
+        db.session.commit()
+
+        # attach amenities to beach if relationship exists
+        # (if your Place model uses place.amenities relationship)
+        if hasattr(beach, "amenities"):
+            beach.amenities.extend([wifi, pool, ac])
+            db.session.commit()
+
+        # 4) reviews for beach (match screenshots)
+        r1 = Review(
+            text="Great place to stay!",
+            rating=4,
+            user_id=jane.id,
+            place_id=beach.id
+        )
+        r2 = Review(
+            text="Amazing location and very comfortable.",
+            rating=5,
+            user_id=robert.id,
+            place_id=beach.id
+        )
+        db.session.add_all([r1, r2])
+        db.session.commit()
+
+    print("✅ Database seeded successfully (matches screenshots).")
 
 
 if __name__ == "__main__":
