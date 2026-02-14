@@ -69,7 +69,6 @@ function updateLoginButton() {
   if (getToken()) {
     btn.textContent = "Logout";
     btn.href = "#";
-    // منع تكرار listener لو الصفحة تعيد تحميل scripts
     btn.onclick = (e) => {
       e.preventDefault();
       clearToken();
@@ -157,7 +156,6 @@ async function loadPlaces() {
   const container = qs("places-list");
   if (!container) return;
 
-  // Try /places/ then /places
   let res = await apiFetch("/places/", { method: "GET" });
   if (res.status === 404 || res.status === 405) {
     res = await apiFetch("/places", { method: "GET" });
@@ -174,9 +172,7 @@ async function loadPlaces() {
   renderPlaces(cachedPlaces);
 
   const select = qs("max-price");
-  if (select) {
-    select.onchange = () => applyMaxPriceFilter(select.value);
-  }
+  if (select) select.onchange = () => applyMaxPriceFilter(select.value);
 }
 
 /* ========= PLACE DETAILS ========= */
@@ -202,18 +198,17 @@ async function loadPlaceDetails() {
   const price = p.price_per_night ?? p.price ?? p.pricePerNight ?? "N/A";
   const description = p.description ?? "";
   const amenities = p.amenities ?? p.amenity_names ?? [];
-  const host =
-  p.host_name ??
-  p.owner_name ??
-  p.owner ??
-  (
-    (p.user && typeof p.user === "object"
-      ? `${p.user.first_name ?? ""} ${p.user.last_name ?? ""}`.trim()
-      : "") ||
-    p.user_id ||
-    "N/A"
-  );
 
+  let host = p.host_name ?? p.owner_name ?? p.owner;
+  if (!host) {
+    host = (
+      (p.user && typeof p.user === "object"
+        ? `${p.user.first_name ?? ""} ${p.user.last_name ?? ""}`.trim()
+        : "") ||
+      p.user_id ||
+      "N/A"
+    );
+  }
 
   if (titleEl) titleEl.textContent = title;
   if (hostEl) hostEl.textContent = host;
@@ -226,7 +221,7 @@ async function loadPlaceDetails() {
   }
 
   await loadReviews(placeId);
-  updateAddReviewVisibility(placeId);
+  updateAddReviewLink(placeId);
 }
 
 /* ========= REVIEWS ========= */
@@ -234,7 +229,6 @@ async function loadReviews(placeId) {
   const wrap = qs("reviews-wrap");
   if (!wrap) return;
 
-  // Try /reviews then /reviews/
   let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, { method: "GET" });
   if (res.status === 404 || res.status === 405) {
     res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, { method: "GET" });
@@ -265,15 +259,19 @@ async function loadReviews(placeId) {
       ? `${userObj.first_name ?? userObj.firstName ?? ""} ${userObj.last_name ?? userObj.lastName ?? ""}`.trim()
       : "";
 
-    const user =
-  r.user_name ??
-  r.username ??
-  (r.userName ?? 
-    (fullNameFromObj ||
-     (typeof r.user === "string" ? r.user : null) ||
-     r.user_id ||
-     "Unknown"));
+    let user =
+      r.user_name ??
+      r.username ??
+      r.userName ??
+      fullNameFromObj;
 
+    if (!user) {
+      user =
+        (typeof r.user === "string" ? r.user : null) ||
+        r.user_id ||
+        r.userId ||
+        "Unknown";
+    }
 
     const text = r.text ?? r.comment ?? "";
     const rating = r.rating ?? 0;
@@ -289,26 +287,25 @@ async function loadReviews(placeId) {
   });
 }
 
-function updateAddReviewVisibility(placeId) {
-  const addWrap = qs("add-review-wrap");
+/* ========= Add Review link only (NO inline form) ========= */
+function updateAddReviewLink(placeId) {
   const mustLoginMsg = qs("must-login-msg");
-  const addLink = qs("add-review-link");
+  const linkWrap = qs("add-review-link-wrap");
+  const link = qs("add-review-link");
 
   const loggedIn = !!getToken();
 
-  if (addWrap) addWrap.style.display = loggedIn ? "block" : "none";
   if (mustLoginMsg) mustLoginMsg.style.display = loggedIn ? "none" : "block";
-
-  if (addLink) addLink.href = `add_review.html?id=${encodeURIComponent(placeId)}`;
+  if (linkWrap) linkWrap.style.display = loggedIn ? "block" : "none";
+  if (link) link.href = `add_review.html?id=${encodeURIComponent(placeId)}`;
 }
 
+/* ========= Add Review Page Submit ========= */
 async function postReview(placeId, payload) {
-  // Try POST /reviews then /reviews/
   let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, {
     method: "POST",
     body: JSON.stringify(payload)
   });
-
   if (res.status === 404 || res.status === 405) {
     res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, {
       method: "POST",
@@ -318,54 +315,25 @@ async function postReview(placeId, payload) {
   return res;
 }
 
-async function handleReviewSubmit(e) {
-  e.preventDefault(); // ✅ يمنع 501
-
-  const placeId = getPlaceIdFromUrl();
-  if (!placeId) return;
-
-  const textEl = qs("review-text");
-  const ratingEl = qs("review-rating");
-  const text = textEl ? textEl.value.trim() : "";
-  const rating = ratingEl ? Number(ratingEl.value) : 1;
-
-  if (!text) return;
-
-  if (!getToken()) {
-    alert("Login first.");
-    return;
-  }
-
-  const res = await postReview(placeId, { text, rating });
-
-  if (!res.ok) {
-    alert("Failed to submit review.");
-    return;
-  }
-
-  if (textEl) textEl.value = "";
-  if (ratingEl) ratingEl.value = "1";
-  await loadReviews(placeId);
-}
-
-/* ========= Add Review Page ========= */
 async function handleAddReviewPageSubmit(e) {
   e.preventDefault();
 
   const placeId = getPlaceIdFromUrl();
   if (!placeId) return;
 
+  if (!getToken()) {
+    alert("Login first.");
+    window.location.href = "login.html";
+    return;
+  }
+
   const textEl = qs("review-text");
   const ratingEl = qs("review-rating");
+
   const text = textEl ? textEl.value.trim() : "";
   const rating = ratingEl ? Number(ratingEl.value) : 1;
 
   if (!text) return;
-
-  if (!getToken()) {
-    alert("Login first.");
-    return;
-  }
 
   const res = await postReview(placeId, { text, rating });
 
@@ -389,11 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (loginForm) loginForm.addEventListener("submit", handleLoginSubmit);
 
   // place.html
-  if (qs("place-title")) {
-    loadPlaceDetails();
-    const reviewForm = qs("review-form");
-    if (reviewForm) reviewForm.addEventListener("submit", handleReviewSubmit);
-  }
+  if (qs("place-title")) loadPlaceDetails();
 
   // add_review.html
   const addForm = qs("add-review-form");

@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HBnB - Place</title>
-  <link rel="icon" href="images/icon.png">
+  <link rel="icon" href="./images/icon.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <header>
   <div class="left">
-    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <img src="./images/logo.png" alt="HBnB logo" class="logo">
     <a class="brand" href="index.html">hbnb</a>
   </div>
   <nav>
@@ -33,40 +33,20 @@
   <h2 class="section-title">Reviews</h2>
   <section id="reviews-wrap" aria-label="Reviews list"></section>
 
-  <!-- تظهر إذا مو مسجل -->
+  <!-- إذا مو مسجل -->
   <div id="must-login-msg" class="add-review">
     <div class="error">Login to add a review.</div>
   </div>
 
-  <!-- تظهر إذا مسجل -->
-  <section id="add-review-wrap" class="add-review" style="display:none;">
-    <h2 class="section-title">Add a Review</h2>
+  <!-- إذا مسجل: زر فقط يفتح صفحة add_review -->
+  <div id="add-review-link-wrap" class="add-review" style="display:none; text-align:center;">
+    <a id="add-review-link" class="details-button" href="add_review.html">Open Add Review Page</a>
+  </div>
 
-    <form id="review-form" class="form" novalidate>
-      <label for="review-text">Your Review:</label>
-      <textarea id="review-text" name="review-text" required></textarea>
-
-      <label for="review-rating">Rating:</label>
-      <select id="review-rating" name="review-rating" required>
-        <option value="1">1 Star</option>
-        <option value="2">2 Stars</option>
-        <option value="3">3 Stars</option>
-        <option value="4">4 Stars</option>
-        <option value="5">5 Stars</option>
-      </select>
-
-      <button class="submit-button" type="submit">Submit Review</button>
-    </form>
-
-    <!-- لو تبي صفحة منفصلة بدل الفورم -->
-    <div style="margin:10px 0; text-align:center;">
-      <a id="add-review-link" class="details-button" href="add_review.html">Open Add Review Page</a>
-    </div>
-  </section>
 </main>
 
 <footer>
-  © 2024 HBnB Evolution. All rights reserved.
+  © 2026 HBnB Evolution. All rights reserved.
 </footer>
 
 <script src="scripts.js"></script>
