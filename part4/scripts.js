@@ -2,25 +2,32 @@
 
 const API_ROOT = "http://127.0.0.1:5000/api/v1";
 
-/* ========= Cookie Token ========= */
-function setCookie(name, value, days = 1) {
-  const maxAge = days * 24 * 60 * 60;
-  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
-}
+/* ========= Token (COOKIE first, localStorage fallback) ========= */
+const TOKEN_COOKIE = "token";
+
 function getCookie(name) {
-  const key = `${encodeURIComponent(name)}=`;
-  return document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(key))
-    ?.slice(key.length) ?? null;
+  const m = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return m ? decodeURIComponent(m[2]) : null;
+}
+function setCookie(name, value, days = 7) {
+  const exp = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${exp}; path=/`;
 }
 function deleteCookie(name) {
-  document.cookie = `${encodeURIComponent(name)}=; Path=/; Max-Age=0; SameSite=Lax`;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
 }
 
-function getToken() { return getCookie("token"); }
-function setToken(t) { setCookie("token", t, 1); }
-function clearToken() { deleteCookie("token"); }
+function getToken() {
+  return getCookie(TOKEN_COOKIE) || localStorage.getItem("token");
+}
+function setToken(t) {
+  setCookie(TOKEN_COOKIE, t, 7);
+  localStorage.setItem("token", t);
+}
+function clearToken() {
+  deleteCookie(TOKEN_COOKIE);
+  localStorage.removeItem("token");
+}
 
 /* ========= Helpers ========= */
 function qs(id) { return document.getElementById(id); }
@@ -46,7 +53,7 @@ function stars(rating) {
   return full + empty;
 }
 
-/* ========= API Fetch ========= */
+/* ========= API ========= */
 async function apiFetch(path, options = {}) {
   const p = path.startsWith("/") ? path : `/${path}`;
   const url = `${API_ROOT}${p}`;
@@ -64,12 +71,23 @@ async function apiFetch(path, options = {}) {
   }
 
   const res = await fetch(url, { ...options, headers });
+  return res;
+}
 
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    console.error("API ERROR:", res.status, res.statusText, url, txt);
+async function apiGetJsonWithFallback(pathA, pathB = null) {
+  let res = await apiFetch(pathA, { method: "GET" });
+  if ((!res.ok || res.status === 404 || res.status === 405) && pathB) {
+    res = await apiFetch(pathB, { method: "GET" });
   }
+  if (!res.ok) return null;
+  return res.json().catch(() => null);
+}
 
+async function apiPostJsonWithFallback(pathA, pathB, payload) {
+  let res = await apiFetch(pathA, { method: "POST", body: JSON.stringify(payload) });
+  if (res.status === 404 || res.status === 405) {
+    res = await apiFetch(pathB, { method: "POST", body: JSON.stringify(payload) });
+  }
   return res;
 }
 
@@ -91,6 +109,73 @@ function updateLoginButton() {
     btn.href = "login.html";
     btn.onclick = null;
   }
+}
+
+/* ========= Caches ========= */
+const userCache = new Map();          // id -> displayName
+let amenitiesMap = null;              // id -> name
+
+function nameFromUserObj(u) {
+  if (!u || typeof u !== "object") return "";
+  const first = u.first_name ?? u.firstName ?? "";
+  const last  = u.last_name ?? u.lastName ?? "";
+  const full = `${first} ${last}`.trim();
+  return full || u.username || u.user_name || u.name || u.email || "";
+}
+
+async function getUserNameById(userId) {
+  if (!userId) return "";
+  if (userCache.has(userId)) return userCache.get(userId);
+
+  // try /users/<id> then /users/<id>/
+  const u =
+    await apiGetJsonWithFallback(`/users/${encodeURIComponent(userId)}`, `/users/${encodeURIComponent(userId)}/`);
+
+  const display =
+    nameFromUserObj(u) ||
+    (typeof u === "string" ? u : "") ||
+    userId;
+
+  userCache.set(userId, display);
+  return display;
+}
+
+async function loadAmenitiesMap() {
+  if (amenitiesMap) return amenitiesMap;
+
+  // try /amenities/ then /amenities
+  const list =
+    await apiGetJsonWithFallback("/amenities/", "/amenities");
+
+  const arr = Array.isArray(list) ? list : (list && list.amenities) ? list.amenities : [];
+  amenitiesMap = new Map();
+  arr.forEach((a) => {
+    if (!a) return;
+    const id = a.id ?? a.amenity_id;
+    const name = a.name ?? a.title;
+    if (id && name) amenitiesMap.set(String(id), String(name));
+  });
+
+  return amenitiesMap;
+}
+
+async function resolveAmenityNames(rawAmenities) {
+  if (!rawAmenities) return "";
+  const map = await loadAmenitiesMap();
+
+  const arr = Array.isArray(rawAmenities) ? rawAmenities : [rawAmenities];
+
+  const names = arr.map((a) => {
+    // object with name
+    if (a && typeof a === "object") {
+      return a.name ?? a.title ?? a.id ?? "";
+    }
+    // id string
+    const key = String(a);
+    return map.get(key) || key;
+  }).filter(Boolean);
+
+  return names.join(", ");
 }
 
 /* ========= AUTH ========= */
@@ -168,19 +253,13 @@ async function loadPlaces() {
   const container = qs("places-list");
   if (!container) return;
 
-  let res = await apiFetch("/places/", { method: "GET" });
-  if (res.status === 404 || res.status === 405) {
-    res = await apiFetch("/places", { method: "GET" });
-  }
-
-  if (!res.ok) {
+  const data = await apiGetJsonWithFallback("/places/", "/places");
+  if (!data) {
     container.innerHTML = `<div class="error">Failed to load places.</div>`;
     return;
   }
 
-  const data = await res.json().catch(() => []);
   cachedPlaces = Array.isArray(data) ? data : (data.places || []);
-
   renderPlaces(cachedPlaces);
 
   const select = qs("max-price");
@@ -198,39 +277,41 @@ async function loadPlaceDetails() {
   const descEl = qs("place-description");
   const amenEl = qs("place-amenities");
 
-  const res = await apiFetch(`/places/${encodeURIComponent(placeId)}`, { method: "GET" });
-  if (!res.ok) {
+  const p =
+    await apiGetJsonWithFallback(`/places/${encodeURIComponent(placeId)}`, `/places/${encodeURIComponent(placeId)}/`);
+
+  if (!p) {
     if (titleEl) titleEl.textContent = "Place not found";
     return;
   }
 
-  const p = await res.json().catch(() => ({}));
-
   const title = p.title ?? p.name ?? "Untitled";
   const price = p.price_per_night ?? p.price ?? p.pricePerNight ?? "N/A";
   const description = p.description ?? "";
-  const amenities = p.amenities ?? p.amenity_names ?? [];
 
-  let host = p.host_name ?? p.owner_name ?? p.owner;
+  // host: try direct fields -> user object -> fetch by owner_id/user_id
+  let host =
+    p.host_name ??
+    p.owner_name ??
+    p.owner ??
+    nameFromUserObj(p.user) ??
+    nameFromUserObj(p.owner);
+
   if (!host) {
-    host = (
-      (p.user && typeof p.user === "object"
-        ? `${p.user.first_name ?? ""} ${p.user.last_name ?? ""}`.trim()
-        : "") ||
-      p.user_id ||
-      "N/A"
-    );
+    const ownerId = p.owner_id ?? p.user_id ?? p.ownerId ?? p.userId;
+    if (ownerId) host = await getUserNameById(String(ownerId));
   }
+  if (!host) host = "N/A";
+
+  // amenities: may come as ids -> map them to names
+  const amenitiesRaw = p.amenities ?? p.amenity_ids ?? p.amenity_names ?? [];
+  const amenitiesText = await resolveAmenityNames(amenitiesRaw);
 
   if (titleEl) titleEl.textContent = title;
   if (hostEl) hostEl.textContent = host;
   if (priceEl) priceEl.textContent = String(price);
   if (descEl) descEl.textContent = description;
-
-  if (amenEl) {
-    if (Array.isArray(amenities)) amenEl.textContent = amenities.map((a) => a.name ?? a).join(", ");
-    else amenEl.textContent = String(amenities);
-  }
+  if (amenEl) amenEl.textContent = amenitiesText;
 
   await loadReviews(placeId);
   updateAddReviewLink(placeId);
@@ -241,19 +322,15 @@ async function loadReviews(placeId) {
   const wrap = qs("reviews-wrap");
   if (!wrap) return;
 
-  let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, { method: "GET" });
-  if (res.status === 404 || res.status === 405) {
-    res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, { method: "GET" });
-  }
+  const reviews =
+    await apiGetJsonWithFallback(`/places/${encodeURIComponent(placeId)}/reviews`, `/places/${encodeURIComponent(placeId)}/reviews/`);
 
-  if (!res.ok) {
+  if (!reviews) {
     wrap.innerHTML = `<div class="error">Failed to load reviews.</div>`;
     return;
   }
 
-  const reviews = await res.json().catch(() => []);
   const list = Array.isArray(reviews) ? reviews : (reviews.reviews || []);
-
   wrap.innerHTML = "";
 
   if (list.length === 0) {
@@ -261,29 +338,22 @@ async function loadReviews(placeId) {
     return;
   }
 
-  list.forEach((r) => {
-    const userObj =
-      (r && typeof r.user === "object" && r.user) ? r.user :
-      (r && typeof r.author === "object" && r.author) ? r.author :
-      null;
-
-    const fullNameFromObj = userObj
-      ? `${userObj.first_name ?? userObj.firstName ?? ""} ${userObj.last_name ?? userObj.lastName ?? ""}`.trim()
-      : "";
-
+  for (const r of list) {
+    // user name: try fields -> user object -> fetch by user_id
     let user =
       r.user_name ??
       r.username ??
       r.userName ??
-      fullNameFromObj;
+      r.name ??
+      r.author_name ??
+      nameFromUserObj(r.user) ??
+      nameFromUserObj(r.author);
 
     if (!user) {
-      user =
-        (typeof r.user === "string" ? r.user : null) ||
-        r.user_id ||
-        r.userId ||
-        "Unknown";
+      const uid = r.user_id ?? r.userId;
+      if (uid) user = await getUserNameById(String(uid));
     }
+    if (!user) user = "Unknown";
 
     const text = r.text ?? r.comment ?? "";
     const rating = r.rating ?? 0;
@@ -296,10 +366,10 @@ async function loadReviews(placeId) {
       <div class="line">Rating: <span class="stars">${escapeHtml(stars(rating))}</span></div>
     `;
     wrap.appendChild(card);
-  });
+  }
 }
 
-/* ========= Add Review link only ========= */
+/* ========= Add Review link only (NO inline form) ========= */
 function updateAddReviewLink(placeId) {
   const mustLoginMsg = qs("must-login-msg");
   const linkWrap = qs("add-review-link-wrap");
@@ -313,20 +383,6 @@ function updateAddReviewLink(placeId) {
 }
 
 /* ========= Add Review Page Submit ========= */
-async function postReview(placeId, payload) {
-  let res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews`, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-  if (res.status === 404 || res.status === 405) {
-    res = await apiFetch(`/places/${encodeURIComponent(placeId)}/reviews/`, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
-  }
-  return res;
-}
-
 async function handleAddReviewPageSubmit(e) {
   e.preventDefault();
 
@@ -345,9 +401,16 @@ async function handleAddReviewPageSubmit(e) {
   const text = textEl ? textEl.value.trim() : "";
   const rating = ratingEl ? Number(ratingEl.value) : 1;
 
-  if (!text) return;
+  if (!text) {
+    alert("Review text is required.");
+    return;
+  }
 
-  const res = await postReview(placeId, { text, rating });
+  const res = await apiPostJsonWithFallback(
+    `/places/${encodeURIComponent(placeId)}/reviews`,
+    `/places/${encodeURIComponent(placeId)}/reviews/`,
+    { text, rating }
+  );
 
   if (!res.ok) {
     alert("Failed to submit review.");
@@ -361,13 +424,17 @@ async function handleAddReviewPageSubmit(e) {
 document.addEventListener("DOMContentLoaded", () => {
   updateLoginButton();
 
+  // index.html
   if (qs("places-list")) loadPlaces();
 
+  // login.html
   const loginForm = qs("login-form");
   if (loginForm) loginForm.addEventListener("submit", handleLoginSubmit);
 
+  // place.html
   if (qs("place-title")) loadPlaceDetails();
 
+  // add_review.html
   const addForm = qs("add-review-form");
   if (addForm) addForm.addEventListener("submit", handleAddReviewPageSubmit);
 });
