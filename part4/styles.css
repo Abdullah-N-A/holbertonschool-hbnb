@@ -52,12 +52,6 @@ nav{
   text-decoration:none;
   font-weight: 600;
 }
-.login-button{
-  color:#fff;
-  text-decoration:none;
-  font-weight: 600;
-}
-
 /* Main */
 main{
   padding: 30px 40px 80px;
@@ -263,4 +257,17 @@ footer{
   justify-content:center;
   color:#fff;
   font-weight: 700;
+}
+/* Make Login button blue */
+.login-button {
+  background: #1e66ff;
+  color: #fff !important;
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-button:hover {
+  filter: brightness(0.95);
 }

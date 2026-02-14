@@ -2,7 +2,7 @@
 
 const API_ROOT = "http://127.0.0.1:5000/api/v1";
 
-/* ========= Cookie (required by checklist) ========= */
+/* ========= Cookie Token ========= */
 function setCookie(name, value, days = 1) {
   const maxAge = days * 24 * 60 * 60;
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
@@ -18,16 +18,9 @@ function deleteCookie(name) {
   document.cookie = `${encodeURIComponent(name)}=; Path=/; Max-Age=0; SameSite=Lax`;
 }
 
-/* ========= Token Storage (cookie first) ========= */
-function getToken() {
-  return getCookie("token");
-}
-function setToken(t) {
-  setCookie("token", t, 1);
-}
-function clearToken() {
-  deleteCookie("token");
-}
+function getToken() { return getCookie("token"); }
+function setToken(t) { setCookie("token", t, 1); }
+function clearToken() { deleteCookie("token"); }
 
 /* ========= Helpers ========= */
 function qs(id) { return document.getElementById(id); }
@@ -70,13 +63,7 @@ async function apiFetch(path, options = {}) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  let res;
-  try {
-    res = await fetch(url, { ...options, headers });
-  } catch (err) {
-    console.error("FETCH FAILED:", url, err);
-    throw err;
-  }
+  const res = await fetch(url, { ...options, headers });
 
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
@@ -135,26 +122,12 @@ async function handleLoginSubmit(e) {
     return;
   }
 
-  // ✅ Checklist: store token in COOKIE
   setToken(data.access_token);
-
   window.location.href = "index.html";
 }
 
 /* ========= PLACES ========= */
 let cachedPlaces = [];
-
-function getCountryFromPlace(p) {
-  // Try common field names (robust)
-  return (
-    p.country ??
-    p.country_name ??
-    p.countryName ??
-    p.location?.country ??
-    p.address?.country ??
-    null
-  );
-}
 
 function renderPlaces(list) {
   const container = qs("places-list");
@@ -178,39 +151,15 @@ function renderPlaces(list) {
   });
 }
 
-function populateCountryFilter() {
-  const select = qs("country-filter");
-  if (!select) return;
-
-  const countries = cachedPlaces
-    .map(getCountryFromPlace)
-    .filter(Boolean)
-    .map((c) => String(c).trim())
-    .filter((c) => c.length > 0);
-
-  const unique = Array.from(new Set(countries)).sort((a, b) => a.localeCompare(b));
-
-  // reset options
-  select.innerHTML = `<option value="All">All</option>`;
-
-  unique.forEach((c) => {
-    const opt = document.createElement("option");
-    opt.value = c;
-    opt.textContent = c;
-    select.appendChild(opt);
-  });
-
-  // لو API ما فيه country نهائيًا، نخلي الفلتر موجود لكن ما يضيف شيء غير All
-}
-
-function applyCountryFilter(selected) {
-  if (!selected || selected === "All") {
+function applyMaxPriceFilter(maxPrice) {
+  if (!maxPrice || maxPrice === "All") {
     renderPlaces(cachedPlaces);
     return;
   }
+  const limit = Number(maxPrice);
   const filtered = cachedPlaces.filter((p) => {
-    const c = getCountryFromPlace(p);
-    return c && String(c).trim() === selected;
+    const price = Number(p.price_per_night ?? p.price ?? p.pricePerNight ?? NaN);
+    return Number.isFinite(price) && price <= limit;
   });
   renderPlaces(filtered);
 }
@@ -234,10 +183,8 @@ async function loadPlaces() {
 
   renderPlaces(cachedPlaces);
 
-  // ✅ Checklist: filtering by country
-  populateCountryFilter();
-  const select = qs("country-filter");
-  if (select) select.onchange = () => applyCountryFilter(select.value);
+  const select = qs("max-price");
+  if (select) select.onchange = () => applyMaxPriceFilter(select.value);
 }
 
 /* ========= PLACE DETAILS ========= */
@@ -281,7 +228,7 @@ async function loadPlaceDetails() {
   if (descEl) descEl.textContent = description;
 
   if (amenEl) {
-    if (Array.isArray(amenities)) amenEl.textContent = amenities.map(a => a.name ?? a).join(", ");
+    if (Array.isArray(amenities)) amenEl.textContent = amenities.map((a) => a.name ?? a).join(", ");
     else amenEl.textContent = String(amenities);
   }
 
@@ -414,17 +361,13 @@ async function handleAddReviewPageSubmit(e) {
 document.addEventListener("DOMContentLoaded", () => {
   updateLoginButton();
 
-  // index.html
   if (qs("places-list")) loadPlaces();
 
-  // login.html
   const loginForm = qs("login-form");
   if (loginForm) loginForm.addEventListener("submit", handleLoginSubmit);
 
-  // place.html
   if (qs("place-title")) loadPlaceDetails();
 
-  // add_review.html
   const addForm = qs("add-review-form");
   if (addForm) addForm.addEventListener("submit", handleAddReviewPageSubmit);
 });
