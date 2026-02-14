@@ -2,17 +2,41 @@
 
 const API_ROOT = "http://127.0.0.1:5000/api/v1";
 
-/* ========= Storage ========= */
-function getToken() { return localStorage.getItem("token"); }
-function setToken(t) { localStorage.setItem("token", t); }
-function clearToken() { localStorage.removeItem("token"); }
+/* ========= Cookie (required by checklist) ========= */
+function setCookie(name, value, days = 1) {
+  const maxAge = days * 24 * 60 * 60;
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
+}
+function getCookie(name) {
+  const key = `${encodeURIComponent(name)}=`;
+  return document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(key))
+    ?.slice(key.length) ?? null;
+}
+function deleteCookie(name) {
+  document.cookie = `${encodeURIComponent(name)}=; Path=/; Max-Age=0; SameSite=Lax`;
+}
+
+/* ========= Token Storage (cookie first) ========= */
+function getToken() {
+  return getCookie("token");
+}
+function setToken(t) {
+  setCookie("token", t, 1);
+}
+function clearToken() {
+  deleteCookie("token");
+}
 
 /* ========= Helpers ========= */
 function qs(id) { return document.getElementById(id); }
+
 function getPlaceIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get("id");
 }
+
 function escapeHtml(str) {
   return String(str)
     .replaceAll("&", "&amp;")
@@ -21,6 +45,7 @@ function escapeHtml(str) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
 function stars(rating) {
   const r = Number(rating) || 0;
   const full = "★".repeat(Math.max(0, Math.min(5, r)));
@@ -28,7 +53,7 @@ function stars(rating) {
   return full + empty;
 }
 
-/* ========= API Fetch (robust) ========= */
+/* ========= API Fetch ========= */
 async function apiFetch(path, options = {}) {
   const p = path.startsWith("/") ? path : `/${path}`;
   const url = `${API_ROOT}${p}`;
@@ -110,12 +135,26 @@ async function handleLoginSubmit(e) {
     return;
   }
 
+  // ✅ Checklist: store token in COOKIE
   setToken(data.access_token);
+
   window.location.href = "index.html";
 }
 
 /* ========= PLACES ========= */
 let cachedPlaces = [];
+
+function getCountryFromPlace(p) {
+  // Try common field names (robust)
+  return (
+    p.country ??
+    p.country_name ??
+    p.countryName ??
+    p.location?.country ??
+    p.address?.country ??
+    null
+  );
+}
 
 function renderPlaces(list) {
   const container = qs("places-list");
@@ -139,15 +178,39 @@ function renderPlaces(list) {
   });
 }
 
-function applyMaxPriceFilter(maxPrice) {
-  if (!maxPrice || maxPrice === "All") {
+function populateCountryFilter() {
+  const select = qs("country-filter");
+  if (!select) return;
+
+  const countries = cachedPlaces
+    .map(getCountryFromPlace)
+    .filter(Boolean)
+    .map((c) => String(c).trim())
+    .filter((c) => c.length > 0);
+
+  const unique = Array.from(new Set(countries)).sort((a, b) => a.localeCompare(b));
+
+  // reset options
+  select.innerHTML = `<option value="All">All</option>`;
+
+  unique.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    select.appendChild(opt);
+  });
+
+  // لو API ما فيه country نهائيًا، نخلي الفلتر موجود لكن ما يضيف شيء غير All
+}
+
+function applyCountryFilter(selected) {
+  if (!selected || selected === "All") {
     renderPlaces(cachedPlaces);
     return;
   }
-  const limit = Number(maxPrice);
-  const filtered = cachedPlaces.filter(p => {
-    const price = Number(p.price_per_night ?? p.price ?? p.pricePerNight ?? NaN);
-    return Number.isFinite(price) && price <= limit;
+  const filtered = cachedPlaces.filter((p) => {
+    const c = getCountryFromPlace(p);
+    return c && String(c).trim() === selected;
   });
   renderPlaces(filtered);
 }
@@ -171,8 +234,10 @@ async function loadPlaces() {
 
   renderPlaces(cachedPlaces);
 
-  const select = qs("max-price");
-  if (select) select.onchange = () => applyMaxPriceFilter(select.value);
+  // ✅ Checklist: filtering by country
+  populateCountryFilter();
+  const select = qs("country-filter");
+  if (select) select.onchange = () => applyCountryFilter(select.value);
 }
 
 /* ========= PLACE DETAILS ========= */
@@ -287,7 +352,7 @@ async function loadReviews(placeId) {
   });
 }
 
-/* ========= Add Review link only (NO inline form) ========= */
+/* ========= Add Review link only ========= */
 function updateAddReviewLink(placeId) {
   const mustLoginMsg = qs("must-login-msg");
   const linkWrap = qs("add-review-link-wrap");
