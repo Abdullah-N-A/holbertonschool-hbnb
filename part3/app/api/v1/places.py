@@ -83,6 +83,9 @@ class PlaceResource(Resource):
         p = Place.query.get(place_id)
         if not p:
             return {"error": "Place not found"}, 404
+
+        owner = User.query.get(p.owner_id)
+
         return {
             "id": p.id,
             "name": p.name,
@@ -92,6 +95,10 @@ class PlaceResource(Resource):
             "latitude": p.latitude,
             "longitude": p.longitude,
             "owner_id": p.owner_id,
+
+            # ✅ اسم الهوست
+            "host_name": f"{owner.first_name} {owner.last_name}" if owner else None,
+
             "amenities": [a.id for a in (p.amenities or [])],
             "created_at": p.created_at.isoformat() if p.created_at else None,
             "updated_at": p.updated_at.isoformat() if p.updated_at else None,
@@ -107,12 +114,14 @@ class PlaceResource(Resource):
         claims = get_jwt()
         user_id = get_jwt_identity()
         if not claims.get("is_admin") and p.owner_id != user_id:
-            return {"error": "Forbidden"}, 403
+            return {"error": "admin only"}, 403
 
         data = api.payload or {}
-        # block owner_id edits
         data.pop("owner_id", None)
+
         updated = facade.update(place_id, data)
+
+        owner = User.query.get(updated.owner_id)
 
         return {
             "id": updated.id,
@@ -123,10 +132,15 @@ class PlaceResource(Resource):
             "latitude": updated.latitude,
             "longitude": updated.longitude,
             "owner_id": updated.owner_id,
+
+            # ✅ اسم الهوست بعد التحديث
+            "host_name": f"{owner.first_name} {owner.last_name}" if owner else None,
+
             "amenities": [a.id for a in (updated.amenities or [])],
             "created_at": updated.created_at.isoformat() if updated.created_at else None,
             "updated_at": updated.updated_at.isoformat() if updated.updated_at else None,
         }, 200
+
 
 
 @api.route("/<string:place_id>/reviews")
@@ -137,16 +151,25 @@ class PlaceReviews(Resource):
         if not place:
             return {"error": "Place not found"}, 404
 
-        return [{
-            "id": r.id,
-            "text": r.text,
-            "rating": r.rating,
-            "user_id": r.user_id,
-            "place_id": r.place_id,
-            "created_at": r.created_at.isoformat() if r.created_at else None,
-            "updated_at": r.updated_at.isoformat() if r.updated_at else None,
-        } for r in (place.reviews or [])], 200
+        out = []
+        for r in (place.reviews or []):
+            u = User.query.get(r.user_id)
 
+            out.append({
+                "id": r.id,
+                "text": r.text,
+                "rating": r.rating,
+                "user_id": r.user_id,
+
+                # ✅ اسم اليوزر بدل UUID
+                "user_name": f"{u.first_name} {u.last_name}" if u else None,
+
+                "place_id": r.place_id,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+                "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+            })
+
+        return out, 200
 
     @jwt_required()
     def post(self, place_id):
@@ -157,8 +180,7 @@ class PlaceReviews(Resource):
 
         if not text:
             return {"error": "Text is required"}, 400
-        
-        # rating لازم رقم بين 1 و 5
+
         try:
             rating = int(rating)
         except Exception:
@@ -175,7 +197,8 @@ class PlaceReviews(Resource):
         user = User.query.get(user_id)
         if not user:
             return {"error": "User not found"}, 404
-            
+
+        # ✅ منع الأدمن من كتابة reviews
         if getattr(user, "is_admin", False):
             return {"error": "Admins are not allowed to create reviews"}, 403
 
@@ -194,6 +217,7 @@ class PlaceReviews(Resource):
             "text": review.text,
             "rating": review.rating,
             "user_id": review.user_id,
+            "user_name": f"{user.first_name} {user.last_name}",
             "place_id": review.place_id,
             "created_at": review.created_at.isoformat() if review.created_at else None,
             "updated_at": review.updated_at.isoformat() if review.updated_at else None,
