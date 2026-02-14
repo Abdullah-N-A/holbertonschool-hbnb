@@ -9,7 +9,6 @@ app = create_app()
 
 
 def set_password(user, plain):
-    # supports set_password() OR hash_password()
     if hasattr(user, "set_password"):
         user.set_password(plain)
     elif hasattr(user, "hash_password"):
@@ -19,7 +18,7 @@ def set_password(user, plain):
 
 
 def reset_db():
-    # wipe tables (order matters)
+    # FK order
     Review.query.delete()
     db.session.commit()
 
@@ -45,12 +44,9 @@ def get_or_create_user(email, first_name, last_name, password, is_admin=False, f
         "is_admin": is_admin,
     }
 
-    # set fixed UUID if your User model allows it
     if fixed_id is not None:
-        try:
-            kwargs["id"] = fixed_id
-        except Exception:
-            pass
+        # if your model supports id as string/uuid
+        kwargs["id"] = fixed_id
 
     u = User(**kwargs)
     set_password(u, password)
@@ -60,7 +56,7 @@ def get_or_create_user(email, first_name, last_name, password, is_admin=False, f
 
 
 def create_amenity(aid, name):
-    # SQLAlchemy 2.x friendly:
+    # SQLAlchemy 2.x friendly: Session.get
     existing = db.session.get(Amenity, aid)
     if existing:
         return existing
@@ -71,12 +67,20 @@ def create_amenity(aid, name):
     return a
 
 
+def safe_attach_amenities(place, amenities):
+    # Only if relationship exists
+    if hasattr(place, "amenities"):
+        for a in amenities:
+            place.amenities.append(a)
+        db.session.commit()
+
+
 def main():
     with app.app_context():
-        # 0) wipe
+        # 0) wipe everything
         reset_db()
 
-        # 1) users (match screenshots)
+        # 1) users
         admin = get_or_create_user(
             email="admin@hbnb.io",
             first_name="Admin",
@@ -110,70 +114,85 @@ def main():
             is_admin=False
         )
 
-        # 2) amenities (match screenshots)
+        # 2) amenities
         wifi = create_amenity("a1b2c3d4-1111-2222-3333-444455556666", "WiFi")
         pool = create_amenity("b2c3d4e5-2222-3333-4444-555566667777", "Pool")
         ac   = create_amenity("c3d4e5f6-3333-4444-5555-666677778888", "Air Conditioning")
+        kitchen = create_amenity("d4e5f6a7-4444-5555-6666-777788889999", "Kitchen")
+        parking = create_amenity("e5f6a7b8-5555-6666-7777-888899990000", "Free Parking")
+        gym = create_amenity("f6a7b8c9-6666-7777-8888-999900001111", "Gym")
 
-        # 3) places (MATCH EXACT NAMES + PRICES + DESCRIPTIONS)
-        # Place __init__ requires: name, description, city, price_per_night, latitude, longitude
-        # and you have owner_id (from your earlier seed)
+        # 3) places (FULL - descriptions + city + coords)
         beach = Place(
             name="Beautiful Beach House",
-            description="A beautiful beach house with amazing views...",
-            city="",
+            description=(
+                "Wake up to ocean views and golden sunsets. This beach house is bright, airy, "
+                "and designed for comfort—perfect for families or friends who want a relaxing stay "
+                "steps away from the sea."
+            ),
+            city="Jeddah",
             price_per_night=150,
-            latitude=0.0,
-            longitude=0.0,
+            latitude=21.4858,
+            longitude=39.1925,
             owner_id=owner.id
         )
 
         cabin = Place(
             name="Cozy Cabin",
-            description="",
-            city="",
+            description=(
+                "A warm wooden cabin tucked away for a quiet escape. Enjoy fresh air, calm nights, "
+                "and a comfortable interior with everything you need for a peaceful weekend."
+            ),
+            city="Abha",
             price_per_night=100,
-            latitude=0.0,
-            longitude=0.0,
+            latitude=18.2164,
+            longitude=42.5053,
             owner_id=owner.id
         )
 
         apt = Place(
             name="Modern Apartment",
-            description="",
-            city="",
+            description=(
+                "A clean, modern apartment in a convenient location. Bright living area, fast Wi-Fi, "
+                "and a practical layout—ideal for business trips or a short city stay."
+            ),
+            city="Riyadh",
             price_per_night=200,
-            latitude=0.0,
-            longitude=0.0,
+            latitude=24.7136,
+            longitude=46.6753,
             owner_id=owner.id
         )
 
         db.session.add_all([beach, cabin, apt])
         db.session.commit()
 
-        # attach amenities to beach if relationship exists
-        # (if your Place model uses place.amenities relationship)
-        if hasattr(beach, "amenities"):
-            beach.amenities.extend([wifi, pool, ac])
-            db.session.commit()
+        # 4) attach amenities (if relationship exists)
+        safe_attach_amenities(beach, [wifi, pool, ac, kitchen, parking])
+        safe_attach_amenities(cabin, [wifi, ac, parking])
+        safe_attach_amenities(apt, [wifi, gym, parking, kitchen])
 
-        # 4) reviews for beach (match screenshots)
-        r1 = Review(
-            text="Great place to stay!",
-            rating=4,
-            user_id=jane.id,
-            place_id=beach.id
-        )
-        r2 = Review(
-            text="Amazing location and very comfortable.",
-            rating=5,
-            user_id=robert.id,
-            place_id=beach.id
-        )
-        db.session.add_all([r1, r2])
+        # 5) reviews (NO ADMIN)
+        # Beach
+        db.session.add_all([
+            Review(text="Great place to stay! Clean, beautiful, and the view is amazing.", rating=4, user_id=jane.id, place_id=beach.id),
+            Review(text="Amazing location and very comfortable. Would definitely come back.", rating=5, user_id=robert.id, place_id=beach.id),
+        ])
+
+        # Cabin
+        db.session.add_all([
+            Review(text="Perfect for a weekend trip. Quiet and cozy with a great vibe.", rating=5, user_id=jane.id, place_id=cabin.id),
+            Review(text="Nice place overall, super calm. Small improvements would make it perfect.", rating=4, user_id=robert.id, place_id=cabin.id),
+        ])
+
+        # Apartment
+        db.session.add_all([
+            Review(text="Clean and stylish. Wi-Fi was fast and the check-in was easy.", rating=5, user_id=jane.id, place_id=apt.id),
+            Review(text="Great spot in the city. Comfortable and practical for a short stay.", rating=4, user_id=robert.id, place_id=apt.id),
+        ])
+
         db.session.commit()
 
-    print("✅ Database seeded successfully (matches screenshots).")
+    print("✅ Database seeded successfully (full places + amenities + reviews).")
 
 
 if __name__ == "__main__":

@@ -157,7 +157,7 @@ class PlaceReviews(Resource):
 
         if not text:
             return {"error": "Text is required"}, 400
-
+        
         # rating لازم رقم بين 1 و 5
         try:
             rating = int(rating)
@@ -175,6 +175,9 @@ class PlaceReviews(Resource):
         user = User.query.get(user_id)
         if not user:
             return {"error": "User not found"}, 404
+            
+        if getattr(user, "is_admin", False):
+            return {"error": "Admins are not allowed to create reviews"}, 403
 
         review = Review(
             text=text,
