@@ -1,28 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Holberton HBNB - Add Review</title>
+  <title>HBnB - Add Review</title>
+  <link rel="icon" href="images/icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script src="scripts.js" defer></script>
 </head>
 <body>
-  <header>
-    <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
-  </header>
 
-  <main>
-    <h1>Add a Review</h1>
-    <form action="#" method="post">
-      <label>Place Name:
-        <input type="text" name="place">
-      </label>
-      <label>Review:
-        <textarea name="review"></textarea>
-      </label>
-      <button type="submit">Submit Review</button>
+<header>
+  <div class="left">
+    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <a class="brand" href="index.html">hbnb</a>
+  </div>
+  <nav>
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="login-button" href="login.html">Login</a>
+  </nav>
+</header>
+
+<main class="place-details">
+  <h1 class="page-title" id="reviewing-title">Reviewing</h1>
+
+  <section class="add-review">
+    <h2 class="section-title">Add a Review</h2>
+
+    <form id="add-review-form" class="form" novalidate>
+      <label for="review-text">Your Review:</label>
+      <textarea id="review-text" name="review-text" required></textarea>
+
+      <label for="review-rating">Rating:</label>
+      <select id="review-rating" name="review-rating" required>
+        <option value="1">1 Star</option>
+        <option value="2">2 Stars</option>
+        <option value="3">3 Stars</option>
+        <option value="4">4 Stars</option>
+        <option value="5">5 Stars</option>
+      </select>
+
+      <button class="submit-button" type="submit">Submit Review</button>
     </form>
-  </main>
+  </section>
+</main>
+
+<footer>
+  © 2024 HBnB Evolution. All rights reserved.
+</footer>
+
+<script src="scripts.js"></script>
+<script>
+  // عنوان الصفحة مثل الصورة: "Reviewing: <Place Title>"
+  (async () => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (!id) return;
+
+    const res = await fetch(`http://127.0.0.1:5000/api/v1/places/${encodeURIComponent(id)}`);
+    if (!res.ok) return;
+    const p = await res.json();
+    const title = p.title || p.name || "Place";
+    document.getElementById("reviewing-title").textContent = `Reviewing: ${title}`;
+  })();
+</script>
 </body>
 </html>

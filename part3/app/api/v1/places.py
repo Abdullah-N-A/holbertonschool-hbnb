@@ -4,6 +4,8 @@ from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from app.business.facade import HBnBFacade
 from app.models.place import Place
 from app.models.user import User
+from app.models.review import Review
+from app.extensions import db
 
 facade = HBnBFacade()
 api = Namespace("places", description="Place operations")
@@ -129,6 +131,7 @@ class PlaceResource(Resource):
 
 @api.route("/<string:place_id>/reviews")
 class PlaceReviews(Resource):
+
     def get(self, place_id):
         place = Place.query.get(place_id)
         if not place:
@@ -143,3 +146,52 @@ class PlaceReviews(Resource):
             "created_at": r.created_at.isoformat() if r.created_at else None,
             "updated_at": r.updated_at.isoformat() if r.updated_at else None,
         } for r in (place.reviews or [])], 200
+
+
+    @jwt_required()
+    def post(self, place_id):
+        data = api.payload or {}
+
+        text = (data.get("text") or "").strip()
+        rating = data.get("rating")
+
+        if not text:
+            return {"error": "Text is required"}, 400
+
+        # rating لازم رقم بين 1 و 5
+        try:
+            rating = int(rating)
+        except Exception:
+            return {"error": "Rating must be an integer"}, 400
+
+        if rating < 1 or rating > 5:
+            return {"error": "Rating must be between 1 and 5"}, 400
+
+        place = Place.query.get(place_id)
+        if not place:
+            return {"error": "Place not found"}, 404
+
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return {"error": "User not found"}, 404
+
+        review = Review(
+            text=text,
+            rating=rating,
+            user_id=user_id,
+            place_id=place_id
+        )
+
+        db.session.add(review)
+        db.session.commit()
+
+        return {
+            "id": review.id,
+            "text": review.text,
+            "rating": review.rating,
+            "user_id": review.user_id,
+            "place_id": review.place_id,
+            "created_at": review.created_at.isoformat() if review.created_at else None,
+            "updated_at": review.updated_at.isoformat() if review.updated_at else None,
+        }, 201

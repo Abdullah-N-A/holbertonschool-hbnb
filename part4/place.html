@@ -1,27 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Holberton HBNB - Place Details</title>
+  <title>HBnB - Place</title>
+  <link rel="icon" href="./images/icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script src="scripts.js" defer></script>
 </head>
 <body>
-  <header>
-    <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
-    <a href="login.html" class="login-button">Login</a>
-  </header>
 
-  <main>
-    <h1>Place Details</h1>
-    <div class="place-card">
-      <img src="icon_bed.png" alt="Bed Icon">
-      <img src="icon_bath.png" alt="Bath Icon">
-      <img src="icon_wifi.png" alt="WiFi Icon">
-      <p>Beautiful place with all amenities!</p>
-      <button class="details-button">View Details</button>
-    </div>
-  </main>
+<header>
+  <div class="left">
+    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <a class="brand" href="index.html">hbnb</a>
+  </div>
+  <nav>
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="login-button" href="login.html">Login</a>
+  </nav>
+</header>
+
+<main class="place-details">
+  <h1 class="page-title" id="place-title">Place</h1>
+
+  <section class="place-info" aria-label="Place information">
+    <div class="line">Host: <span id="place-host">N/A</span></div>
+    <div class="line"><b>Price per night:</b> $<span id="place-price">0</span></div>
+    <div class="line"><b>Description:</b> <span id="place-description"></span></div>
+    <div class="line"><b>Amenities:</b> <span id="place-amenities"></span></div>
+  </section>
+
+  <h2 class="section-title">Reviews</h2>
+  <section id="reviews-wrap" aria-label="Reviews list"></section>
+
+  <!-- إذا مو مسجل -->
+  <div id="must-login-msg" class="add-review">
+    <div class="error">Login to add a review.</div>
+  </div>
+
+  <!-- إذا مسجل: زر فقط يفتح صفحة add_review -->
+  <div id="add-review-link-wrap" class="add-review" style="display:none; text-align:center;">
+    <a id="add-review-link" class="details-button" href="add_review.html">Open Add Review Page</a>
+  </div>
+
+</main>
+
+<footer>
+  © 2026 HBnB Evolution. All rights reserved.
+</footer>
+
+<script src="scripts.js"></script>
 </body>
 </html>

@@ -1,27 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Holberton HBNB - Home</title>
+  <title>HBnB - Places</title>
+  <link rel="icon" href="images/icon.png">
   <link rel="stylesheet" href="styles.css">
-  <script src="scripts.js" defer></script>
 </head>
 <body>
-  <header>
-    <img src="logo.png" alt="Holberton HBNB Logo" class="logo">
-    <a href="login.html" class="login-button">Login</a>
-  </header>
 
+<header>
+  <div class="left">
+    <img src="images/logo.png" alt="HBnB logo" class="logo">
+    <a class="brand" href="index.html">hbnb</a>
+  </div>
   <nav>
-    <a href="index.html">Home</a>
-    <a href="place.html">Places</a>
-    <a href="add_review.html">Add Review</a>
+    <a class="nav-link" href="index.html">Home</a>
+    <a class="login-button" href="login.html">Login</a>
   </nav>
+</header>
 
-  <main>
-    <h1>Welcome to Holberton HBNB!</h1>
-    <p>Explore our amazing places and reviews.</p>
-  </main>
+<main>
+  <h1 class="page-title">Available Places</h1>
+
+  <div class="filter-bar">
+    <label for="country-filter">Country:</label>
+    <select id="country-filter" name="country-filter">
+      <option value="All">All</option>
+    </select>
+  </div>
+
+  <section id="places-list" class="places-grid" aria-label="Places list"></section>
+</main>
+
+<footer>
+  © 2026 HBnB Evolution. All rights reserved.
+</footer>
+
+<script src="scripts.js"></script>
 </body>
 </html>
